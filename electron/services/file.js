@@ -63,7 +63,7 @@ async processFileAsync(fileId, filePath, fileName) {
     // --- 3. Crop card region (scaled) ---
     const meta = await sharp(fullPageBuffer).metadata();
     const pageWidth = meta.width;
-    const scaleFactor = pageWidth / 2500; // reference width
+    const scaleFactor = pageWidth / 2500;// reference width
 
     const cardCroppedBuffer = await sharp(fullPageBuffer)
       .extract({
@@ -75,20 +75,28 @@ async processFileAsync(fileId, filePath, fileName) {
       .png()
       .toBuffer();
 
+      const croppedBuffer = await sharp(cardCroppedBuffer)
+        .extract({ left: 0, top: 0, width: 504, height: 320 })
+        .png()
+        .toBuffer();
+
     // --- 4. Crop photo region ---
     const photoBuffer = await sharp(cardCroppedBuffer)
       .extract({
-        left: Math.floor(773 * scaleFactor),
-        top: Math.floor(444 * scaleFactor),
-        width: Math.floor(209 * scaleFactor),
-        height: Math.floor(185 * scaleFactor)
+        left: 392,
+        top: 225,
+        width: 103,
+        height: 93
       })
       .resize(70, 70)
       .png()
       .toBuffer();
 
+      const base64Image = photoBuffer.toString("base64");
+      console.log("data:image/png;base64," + base64Image);
+
     // --- 5. OCR for text extraction ---
-    const { data } = await Tesseract.recognize(cardCroppedBuffer, "tam+eng");
+    const { data } = await Tesseract.recognize(croppedBuffer, "tam+eng");
     const lines = data.text.split("\n").map(l => l.trim()).filter(Boolean);
 
     // Extract ID number
