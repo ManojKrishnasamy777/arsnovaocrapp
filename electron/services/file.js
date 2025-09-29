@@ -165,13 +165,13 @@ async processFileAsync(fileId, filePath, fileName) {
     const embeddedPng = await outPdf.embedPng(finalImage);
     pageOut.drawImage(embeddedPng, { x: 0, y: 0, width: widthOut, height: heightOut });
     fs.writeFileSync(pdfOutputPath, await outPdf.save());
-
+console.log('output data',idNumber,name,name,pdfOutputPath);
     // --- 8. Update database ---
      await this.db.run(`
         UPDATE files 
-        SET extracted_text = ?, output_path = ?, processing_status = 'completed', processed_at = CURRENT_TIMESTAMP 
+        SET file_id = ?, file_name = ?,extracted_text = ?, output_path = ?, processing_status = 'completed', processed_at = CURRENT_TIMESTAMP 
         WHERE id = ?
-      `, [name, pdfOutputPath, fileId]);
+      `, [idNumber,name,name,pdfOutputPath, fileId]);
 
 
     console.log(`File ${fileId} processed successfully.`);
