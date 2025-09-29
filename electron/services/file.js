@@ -36,9 +36,9 @@ this.outputDir = path.join('D:', 'OcrApp', 'Outputs');
       const fileId = fileRecord.id;
 
       // Start async processing
-      this.processFileAsync(fileId, uploadPath, uniqueFileName);
-
-      return { success: true, fileId, message: 'File uploaded successfully, processing started' };
+   let resData = await this.processFileAsync(fileId, uploadPath, uniqueFileName);
+console.log('resData',resData);
+      return { additionalData:resData,success: true, fileId, message: 'File uploaded successfully, processing started' };
     } catch (err) {
       console.error('Error in processFile:', err);
       return { success: false, error: err.message };
@@ -93,7 +93,7 @@ async processFileAsync(fileId, filePath, fileName) {
       .toBuffer();
 
       const base64Image = photoBuffer.toString("base64");
-      console.log("data:image/png;base64," + base64Image);
+      // console.log("data:image/png;base64," + base64Image);
 
     // --- 5. OCR for text extraction ---
     const { data } = await Tesseract.recognize(croppedBuffer, "tam+eng");
@@ -153,28 +153,39 @@ async processFileAsync(fileId, filePath, fileName) {
       ])
       .png()
       .toBuffer();
+    // const pngOutputPath = path.join(this.outputDir, `processed_${path.parse(fileName).name}.png`);
+    // fs.writeFileSync(pngOutputPath, finalImage);
 
-    const pngOutputPath = path.join(this.outputDir, `processed_${path.parse(fileName).name}.png`);
-    fs.writeFileSync(pngOutputPath, finalImage);
-
-    // --- 7. Create processed PDF ---
-    const pdfOutputPath = path.join(this.outputDir, `processed_${path.parse(fileName).name}.pdf`);
-    const outPdf = await PDFDocument.create();
-    outPdf.registerFontkit(fontkit);
-    const pageOut = outPdf.addPage([widthOut, heightOut]);
-    const embeddedPng = await outPdf.embedPng(finalImage);
-    pageOut.drawImage(embeddedPng, { x: 0, y: 0, width: widthOut, height: heightOut });
-    fs.writeFileSync(pdfOutputPath, await outPdf.save());
-console.log('output data',idNumber,name,name,pdfOutputPath);
-    // --- 8. Update database ---
-     await this.db.run(`
-        UPDATE files 
-        SET file_id = ?, file_name = ?,extracted_text = ?, output_path = ?, processing_status = 'completed', processed_at = CURRENT_TIMESTAMP 
-        WHERE id = ?
-      `, [idNumber,name,name,pdfOutputPath, fileId]);
+    // // --- 7. Create processed PDF ---
+    // const pdfOutputPath = path.join(this.outputDir, `processed_${path.parse(fileName).name}.pdf`);
+    // const outPdf = await PDFDocument.create();
+    // outPdf.registerFontkit(fontkit);
+    // const pageOut = outPdf.addPage([widthOut, heightOut]);
+    // const embeddedPng = await outPdf.embedPng(finalImage);
+    // pageOut.drawImage(embeddedPng, { x: 0, y: 0, width: widthOut, height: heightOut });
+    // fs.writeFileSync(pdfOutputPath, await outPdf.save());
+// console.log('output data',idNumber,name,name,pdfOutputPath);
+//     // --- 8. Update database ---
+//      await this.db.run(`
+//         UPDATE files 
+//         SET file_id = ?, file_name = ?,extracted_text = ?, output_path = ?, processing_status = 'completed', processed_at = CURRENT_TIMESTAMP 
+//         WHERE id = ?
+//       `, [idNumber,name,name,pdfOutputPath, fileId]);
 
 
     console.log(`File ${fileId} processed successfully.`);
+    return {
+      success: true,
+       fileId,
+      fileName,
+      idNumber,
+      name,
+      address1,
+      address2,
+      finalImage,     // Buffer
+      widthOut,
+      heightOut
+    };
   } catch (err) {
     console.error(`Error processing file ${fileId}:`, err);
     await this.db.run(
@@ -209,6 +220,55 @@ console.log('output data',idNumber,name,name,pdfOutputPath);
       `, [userId]);
       return { success: true, files };
     } catch (err) {
+      return { success: false, error: err.message };
+    }
+  }
+
+  async updateProcessed(
+    fileId,
+    fileName,
+    idNumber,
+    name,
+    finalImageBuffer,
+    widthOut,
+    heightOut
+  ) {
+    try {
+      const baseName = path.parse(fileName).name;
+
+      // 1️⃣ Save the final PNG
+      const pngOutputPath = path.join(this.outputDir, `processed_${baseName}.png`);
+      fs.writeFileSync(pngOutputPath, Buffer.from(finalImageBuffer));
+
+      // 2️⃣ Create a PDF with the PNG embedded
+      const pdfOutputPath = path.join(this.outputDir, `processed_${baseName}.pdf`);
+      const outPdf = await PDFDocument.create();
+      outPdf.registerFontkit(fontkit);
+      const pageOut = outPdf.addPage([widthOut, heightOut]);
+      const embeddedPng = await outPdf.embedPng(Buffer.from(finalImageBuffer));
+      pageOut.drawImage(embeddedPng, { x: 0, y: 0, width: widthOut, height: heightOut });
+      fs.writeFileSync(pdfOutputPath, await outPdf.save());
+
+      // 3️⃣ Update the SQLite database
+      await this.db.run(
+        `UPDATE files
+         SET file_id = ?, 
+             file_name = ?, 
+             extracted_text = ?, 
+             output_path = ?, 
+             processing_status = 'completed',
+             processed_at = CURRENT_TIMESTAMP
+         WHERE id = ?`,
+        [idNumber, name, name, pdfOutputPath, fileId]
+      );
+
+      return {
+        success: true,
+        pngOutputPath,
+        pdfOutputPath
+      };
+    } catch (err) {
+      console.error('Error in updateProcessed:', err);
       return { success: false, error: err.message };
     }
   }

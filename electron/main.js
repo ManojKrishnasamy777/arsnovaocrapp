@@ -16,9 +16,9 @@ function createWindow() {
       contextIsolation: true,
       preload: path.join(__dirname, 'preload.js'),
     },
-    titleBarStyle: 'hiddenInset',
+    titleBarStyle: 'customButtonsOnHover',
     show: false,
-    autoHideMenuBar: true, // ✅ hides the menu bar but Alt key shows it temporarily
+    autoHideMenuBar: false, // ✅ hides the menu bar but Alt key shows it temporarily
   });
 
   if (isDev) {
@@ -109,6 +109,9 @@ ipcMain.handle('files:upload', (event, { filePath, fileName, userId }) =>
 ipcMain.handle('files:getAll', () => fileService.getAllFiles());
 ipcMain.handle('files:getUserFiles', (event, userId) =>
   fileService.getUserFiles(userId)
+);
+ipcMain.handle('files:updateProcessed', (e, args) =>
+  fileService.updateProcessed(args.fileId, args.fileName, args.idNumber, args.name, Buffer.from(args.finalImageBuffer), args.widthOut, args.heightOut)
 );
 
 // ---------------------------

@@ -4,6 +4,9 @@ import { useAuth } from '../../contexts/AuthContext';
 
 const FileUpload: React.FC = () => {
   const [uploading, setUploading] = useState(false);
+
+
+  const [uploadedData, setuploadedData] = useState<any>({});
   const [uploadStatus, setUploadStatus] = useState<{
     type: 'success' | 'error' | null;
     message: string;
@@ -12,6 +15,10 @@ const FileUpload: React.FC = () => {
   const { user } = useAuth();
 
   const handleFileSelect = async () => {
+    /* eslint-disable no-debugger */
+    debugger;
+    /* eslint-enable no-debugger */
+
     try {
       const result = await window.electronAPI.showOpenDialog();
 
@@ -30,7 +37,21 @@ const FileUpload: React.FC = () => {
         fileName,
         userId: user?.id
       });
+      /* eslint-disable no-debugger */
+      debugger;
+      /* eslint-enable no-debugger */
 
+      console.log('Upload result:', uploadResult.additionalData);
+      if (uploadResult.additionalData) {
+        const data = uploadResult.additionalData;
+        if (data.finalImage) {
+          const base64Image = Buffer.isBuffer(data.finalImage)
+            ? data.finalImage.toString('base64')
+            : data.finalImage;
+          data.finalImageUrl = `data:image/png;base64,${base64Image}`;
+        }
+        setuploadedData(data);
+      }
       if (uploadResult.success) {
         setUploadStatus({
           type: 'success',
@@ -113,20 +134,41 @@ const FileUpload: React.FC = () => {
 
       {/* Processing Info */}
       <div className="mt-8 bg-blue-50 rounded-lg p-6">
-        <h4 className="text-lg font-semibold text-blue-900 mb-3">Processing Information</h4>
+        <h4 className="text-lg font-semibold text-blue-900 mb-3">Processed Information</h4>
         <div className="space-y-3">
           <div className="flex items-start gap-3">
             <Clock className="text-blue-600 mt-0.5" size={16} />
             <div>
-              <p className="font-medium text-blue-900">Processing Time</p>
-              <p className="text-sm text-blue-700">Files are processed in the background. Large files may take several minutes.</p>
+              <p className="font-medium text-blue-900">ID</p>
+              <p className="text-sm text-blue-700">{uploadedData?.idNumber}</p>
             </div>
           </div>
           <div className="flex items-start gap-3">
             <FileText className="text-blue-600 mt-0.5" size={16} />
             <div>
-              <p className="font-medium text-blue-900">Output Generation</p>
-              <p className="text-sm text-blue-700">A new PDF with extracted text will be generated automatically.</p>
+              <p className="font-medium text-blue-900">Name</p>
+              <p className="text-sm text-blue-700">{uploadedData?.name}</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <FileText className="text-blue-600 mt-0.5" size={16} />
+            <div>
+              <p className="font-medium text-blue-900">Additional Detail</p>
+              <p className="text-sm text-blue-700">{uploadedData?.address1}</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <FileText className="text-blue-600 mt-0.5" size={16} />
+            <div>
+              <p className="font-medium text-blue-900">Additional Detail</p>
+              <p className="text-sm text-blue-700">{uploadedData?.address2}</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <FileText className="text-blue-600 mt-0.5" size={16} />
+            <div>
+              <p className="font-medium text-blue-900">Image</p>
+              <p className="text-sm text-blue-700">{uploadedData?.finalImage}</p>
             </div>
           </div>
         </div>
