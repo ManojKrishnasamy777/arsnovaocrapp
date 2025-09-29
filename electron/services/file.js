@@ -92,42 +92,88 @@ async processFileAsync(fileId, filePath, fileName) {
       .png()
       .toBuffer();
 
-    // --- 5. OCR for text extraction ---
-     const { data } = await Tesseract.recognize(croppedBuffer, "tam+eng");
+//     // --- 5. OCR for text extraction ---
+//      const { data } = await Tesseract.recognize(croppedBuffer, "tam+eng");
 
-const lines = data.text
-  .split("\n")
-  .map((l) => l.trim())
-  .filter((l) => l.length > 0);
+// const lines = data.text
+//   .split("\n")
+//   .map((l) => l.trim())
+//   .filter((l) => l.length > 0);
 
-console.log("OCR Lines:", lines);
+// console.log("OCR Lines:", lines);
 
-// Find ID number
-const idNumberMatch = lines.find((line) => /\d{15,}/.test(line));
-const idNumber = idNumberMatch ? idNumberMatch.match(/\d{15,}/)[0] : null;
+// // Find ID number
+// const idNumberMatch = lines.find((line) => /\d{15,}/.test(line));
+// const idNumber = idNumberMatch ? idNumberMatch.match(/\d{15,}/)[0] : null;
 
-// Extract name and addresses
-let name = null;
-let address1 = null;
-let address2 = null;
+// // Extract name and addresses
+// let name = null;
+// let address1 = null;
+// let address2 = null;
 
-if (idNumberMatch) {
-  const idx = lines.indexOf(idNumberMatch);
+// if (idNumberMatch) {
+//   const idx = lines.indexOf(idNumberMatch);
 
-  // Name: next line after ID
-  if (idx >= 0 && idx + 1 < lines.length) {
-    name = lines[idx + 1].replace(/[^a-zA-Z0-9\s]/g, "").trim();
+//   // Name: next line after ID
+//   if (idx >= 0 && idx + 1 < lines.length) {
+//     name = lines[idx + 1].replace(/[^a-zA-Z0-9\s]/g, "").trim();
+//   }
+
+//   // Address: next two lines after name
+//   if (idx + 2 < lines.length) {
+//     // remove special characters except letters, numbers, spaces, commas, dots
+//     address1 = lines[idx + 2].replace(/[^a-zA-Z0-9\s,\.]/g, "").trim();
+//   }
+//   if (idx + 3 < lines.length) {
+//     address2 = lines[idx + 3].replace(/[^a-zA-Z0-9\s,\.]/g, "").trim();
+//   }
+// }
+
+const parsed = await pdfParse(pdfBytes.buffer);
+  const text = parsed.text;
+  console.log(text);
+
+  const removePatterns = ["தமிழ்நாடு அரசு", "உறுப்பினர்", "அைடயாள", "அட்ைட"];
+
+  function cleanLine(line) {
+    let cleaned = line.trim();
+    for (const p of removePatterns) {
+      if (cleaned.includes(p)) {
+        return ""; // skip these lines
+      }
+    }
+    return cleaned; // keep original characters
   }
 
-  // Address: next two lines after name
-  if (idx + 2 < lines.length) {
-    // remove special characters except letters, numbers, spaces, commas, dots
-    address1 = lines[idx + 2].replace(/[^a-zA-Z0-9\s,\.]/g, "").trim();
+  const lines = text
+    .split("\n")
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0);
+
+  let idNumber = "";
+  let name = "";
+  let address1 = "";
+  let address2 = "";
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    // Detect ID number (16–22 digit number)
+    if (/^\d{16,22}$/.test(line)) {
+      idNumber = line;
+
+      // Name = next line
+      if (i + 1 < lines.length) name = cleanLine(lines[i + 1]);
+
+      // Address1 = line after name
+      if (i + 2 < lines.length) address1 = cleanLine(lines[i + 2]);
+
+      // Address2 = line after address1
+      if (i + 3 < lines.length) address2 = cleanLine(lines[i + 3]);
+
+      break;
+    }
   }
-  if (idx + 3 < lines.length) {
-    address2 = lines[idx + 3].replace(/[^a-zA-Z0-9\s,\.]/g, "").trim();
-  }
-}
 
 console.log("fulldata", name || null, idNumber || null, address1 || null, address2 || null);
 
@@ -137,13 +183,13 @@ console.log("fulldata", name || null, idNumber || null, address1 || null, addres
     const svgText = `
       <svg width="${widthOut}" height="${heightOut}">
         <style>
-          .number { fill:black; font-size:12px; font-weight:bold; }
-          .label { fill:black; font-size:14px; font-weight:bold; }
-          .address { fill:black; font-size:10px; font-weight:bold; }
+          .number { fill:black; font-size:11px; font-weight:bold; }
+          .label { fill:black; font-size:11px; font-weight:bold; }
+          .address { fill:black; font-size:11px; font-weight:bold; }
         </style>
         <text x="8" y="145" class="number">${idNumber}</text>
-        <text x="8" y="163" class="label">${name}</text>
-        <text x="8" y="179" class="address">${address1}</text>
+        <text x="8" y="160" class="label">${name}</text>
+        <text x="8" y="175" class="address">${address1}</text>
         <text x="8" y="195" class="address">${address2}</text>
       </svg>
     `;
@@ -252,9 +298,9 @@ const photoBufferImg = photoBuffer.toString('base64');
     const svgText = `
       <svg width="${widthOut}" height="${heightOut}">
         <style>
-          .number { fill:black; font-size:12px; font-weight:bold; }
-          .label { fill:black; font-size:14px; font-weight:bold; }
-          .address { fill:black; font-size:10px; font-weight:bold; }
+          .number { fill:black; font-size:11px; font-weight:bold; }
+          .label { fill:black; font-size:11px; font-weight:bold; }
+          .address { fill:black; font-size:11px; font-weight:bold; }
         </style>
         <text x="8" y="145" class="number">${idNumber}</text>
         <text x="8" y="163" class="label">${name}</text>
