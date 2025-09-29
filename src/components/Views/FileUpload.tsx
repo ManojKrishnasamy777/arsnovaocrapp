@@ -47,7 +47,7 @@ const FileUpload: React.FC = () => {
         address2: uploadedData.address2,
         finalImageBuffer: uploadedData.photoBuffer,
       });
-      alert(`Updated successfully!${res.pngOutputPath ? `\nPNG saved at: ${res.pngOutputPath}` : ''}${res.pdfOutputPath ? `\nPDF saved at: ${res.pdfOutputPath}` : ''}`);
+      alert(`Created successfully!${res.pngOutputPath ? `\nPNG saved at: ${res.pngOutputPath}` : ''}${res.pdfOutputPath ? `\nPDF saved at: ${res.pdfOutputPath}` : ''}`);
       setEditField(null);
       setUploadedData({});
       setUploadStatus({ type: null, message: '' });
@@ -210,9 +210,9 @@ const FileUpload: React.FC = () => {
             </div>
 
             {/* Update Button */}
-            <div className="mt-4">
+            <div className="mt-4 text-right">
               <button onClick={handleSave} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors">
-                Update
+                Verify
               </button>
             </div>
 
