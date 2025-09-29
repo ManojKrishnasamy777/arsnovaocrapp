@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoginForm from './components/Auth/LoginForm';
-import Sidebar from './components/Layout/Sidebar';
-import Header from './components/Layout/Header';
+import DefaultLayout from './components/Layout/DefaultLayout';
 import Dashboard from './components/Views/Dashboard';
 import FileUpload from './components/Views/FileUpload';
 import FileList from './components/Views/FileList';
@@ -25,17 +24,6 @@ const AppContent: React.FC = () => {
     return <LoginForm />;
   }
 
-  const getViewTitle = (view: string) => {
-    const titles: Record<string, string> = {
-      dashboard: 'Dashboard',
-      upload: 'Upload PDF',
-      files: 'Files',
-      users: 'User Management',
-      roles: 'Role Management',
-    };
-    return titles[view] || 'Dashboard';
-  };
-
   const renderView = () => {
     switch (activeView) {
       case 'dashboard':
@@ -54,15 +42,9 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      <Sidebar activeView={activeView} onViewChange={setActiveView} />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header title={getViewTitle(activeView)} />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto">
-          {renderView()}
-        </main>
-      </div>
-    </div>
+    <DefaultLayout activeView={activeView} onViewChange={setActiveView}>
+      {renderView()}
+    </DefaultLayout>
   );
 };
 
