@@ -92,35 +92,45 @@ async processFileAsync(fileId, filePath, fileName) {
       .png()
       .toBuffer();
 
-      const base64Image = photoBuffer.toString("base64");
-      // console.log("data:image/png;base64," + base64Image);
-
     // --- 5. OCR for text extraction ---
-    const { data } = await Tesseract.recognize(croppedBuffer, "tam+eng");
-    const lines = data.text.split("\n").map(l => l.trim()).filter(Boolean);
+     const { data } = await Tesseract.recognize(croppedBuffer, "tam+eng");
 
-    // Extract ID number
-    const idMatch = lines.find(l => /\d{15,}/.test(l));
-    const idNumber = idMatch ? idMatch.match(/\d{15,}/)[0] : "";
+const lines = data.text
+  .split("\n")
+  .map((l) => l.trim())
+  .filter((l) => l.length > 0);
 
-    // Extract name (next line after ID)
-    let name = "";
-    let address1 = "";
-    let address2 = "";
-    if (idMatch) {
-      const idx = lines.indexOf(idMatch);
-      name = lines[idx + 1]?.replace(/[^a-zA-Z0-9\s]/g, "").trim() || "";
+console.log("OCR Lines:", lines);
 
-      // Extract address lines (after name, stop at phone numbers)
-      const addrLines = [];
-      for (let i = idx + 2; i < lines.length; i++) {
-        if (/\d{8,}/.test(lines[i])) break; // stop at phone numbers
-        const cleanLine = lines[i].replace(/[^a-zA-Z0-9\s,\.]/g, "").trim();
-        if (cleanLine) addrLines.push(cleanLine);
-      }
-      address1 = addrLines[0] || "";
-      address2 = addrLines[1] || "";
-    }
+// Find ID number
+const idNumberMatch = lines.find((line) => /\d{15,}/.test(line));
+const idNumber = idNumberMatch ? idNumberMatch.match(/\d{15,}/)[0] : null;
+
+// Extract name and addresses
+let name = null;
+let address1 = null;
+let address2 = null;
+
+if (idNumberMatch) {
+  const idx = lines.indexOf(idNumberMatch);
+
+  // Name: next line after ID
+  if (idx >= 0 && idx + 1 < lines.length) {
+    name = lines[idx + 1].replace(/[^a-zA-Z0-9\s]/g, "").trim();
+  }
+
+  // Address: next two lines after name
+  if (idx + 2 < lines.length) {
+    // remove special characters except letters, numbers, spaces, commas, dots
+    address1 = lines[idx + 2].replace(/[^a-zA-Z0-9\s,\.]/g, "").trim();
+  }
+  if (idx + 3 < lines.length) {
+    address2 = lines[idx + 3].replace(/[^a-zA-Z0-9\s,\.]/g, "").trim();
+  }
+}
+
+console.log("fulldata", name || null, idNumber || null, address1 || null, address2 || null);
+
 
     // --- 6. Create final PNG with overlay ---
     const widthOut = 325, heightOut = 204;
