@@ -60,11 +60,6 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, onViewChange, sidebarOpen
           </button>
         </div>
 
-        <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-          <p className="text-sm font-medium text-gray-900 dark:text-white">{user?.name}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">{user?.role_name}</p>
-        </div>
-
         <div className="h-[calc(100vh-140px)] overflow-y-auto">
           <nav className="p-4">
             <ul className="space-y-1">
