@@ -7,7 +7,7 @@ const bcrypt = require('bcryptjs');
 class Database {
   constructor() {
     const userDataPath = app.getPath('userData');
-    const dbPath = path.join(userDataPath, 'arsona_databasees.db');
+    const dbPath = path.join(userDataPath, 'arsona_database.db');
     
     // Ensure directory exists
     if (!fs.existsSync(userDataPath)) {
@@ -59,6 +59,8 @@ class Database {
         output_path TEXT,
         file_id TEXT,
         file_name TEXT,
+        address1 TEXT,
+        address2 TEXT,
         extracted_text TEXT,
         processing_status TEXT DEFAULT 'pending',
         upload_time DATETIME DEFAULT CURRENT_TIMESTAMP,

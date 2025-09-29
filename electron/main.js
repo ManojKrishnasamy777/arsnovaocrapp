@@ -111,7 +111,8 @@ ipcMain.handle('files:getUserFiles', (event, userId) =>
   fileService.getUserFiles(userId)
 );
 ipcMain.handle('files:updateProcessed', (e, args) =>
-  fileService.updateProcessed(args.fileId, args.fileName, args.idNumber, args.name, Buffer.from(args.finalImageBuffer), args.widthOut, args.heightOut)
+  console.log('args in main',args) ||
+  fileService.updateProcessed(args.fileId, args.fileName, args.idNumber, args.name, args.finalImageBuffer, args.address1, args.address2)
 );
 
 // ---------------------------

@@ -58,6 +58,15 @@ declare global {
       uploadFile: (fileData: any) => Promise<any>;
       getAllFiles: () => Promise<any>;
       getUserFiles: (userId: number) => Promise<any>;
+      updateProcessedFile: (data: {
+        fileId: number;
+        fileName: string;
+        idNumber: string;
+        name: string;
+        address1: string;
+        address2: string;
+        finalImageBuffer: Uint8Array; // or number[]
+      }) => Promise<void>;
 
       // Dialog methods
       showOpenDialog: () => Promise<any>;

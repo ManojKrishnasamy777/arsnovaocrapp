@@ -22,6 +22,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   uploadFile: (fileData) => ipcRenderer.invoke('files:upload', fileData),
   getAllFiles: () => ipcRenderer.invoke('files:getAll'),
   getUserFiles: (userId) => ipcRenderer.invoke('files:getUserFiles', userId),
+  updateProcessedFile: (data) => ipcRenderer.invoke('files:updateProcessed', data),
+
   
   // Dialog methods
   showOpenDialog: () => ipcRenderer.invoke('dialog:showOpenDialog'),

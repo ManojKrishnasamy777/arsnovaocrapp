@@ -181,7 +181,8 @@ console.log("fulldata", name || null, idNumber || null, address1 || null, addres
 //         SET file_id = ?, file_name = ?,extracted_text = ?, output_path = ?, processing_status = 'completed', processed_at = CURRENT_TIMESTAMP 
 //         WHERE id = ?
 //       `, [idNumber,name,name,pdfOutputPath, fileId]);
-
+// const finalImageBase64 = finalImage.toString('base64');
+const photoBufferImg = photoBuffer.toString('base64');
 
     console.log(`File ${fileId} processed successfully.`);
     return {
@@ -192,7 +193,9 @@ console.log("fulldata", name || null, idNumber || null, address1 || null, addres
       name,
       address1,
       address2,
-      finalImage,     // Buffer
+      finalImage,
+      photoBufferImg,
+      photoBuffer,
       widthOut,
       heightOut
     };
@@ -240,23 +243,54 @@ console.log("fulldata", name || null, idNumber || null, address1 || null, addres
     idNumber,
     name,
     finalImageBuffer,
-    widthOut,
-    heightOut
+    address1,
+    address2,
   ) {
     try {
-      const baseName = path.parse(fileName).name;
+// --- 6. Create final PNG with overlay ---
+    const widthOut = 325, heightOut = 204;
+    const svgText = `
+      <svg width="${widthOut}" height="${heightOut}">
+        <style>
+          .number { fill:black; font-size:12px; font-weight:bold; }
+          .label { fill:black; font-size:14px; font-weight:bold; }
+          .address { fill:black; font-size:10px; font-weight:bold; }
+        </style>
+        <text x="8" y="145" class="number">${idNumber}</text>
+        <text x="8" y="163" class="label">${name}</text>
+        <text x="8" y="179" class="address">${address1}</text>
+        <text x="8" y="195" class="address">${address2}</text>
+      </svg>
+    `;
+    const svgBorder = `
+      <svg width="${widthOut}" height="${heightOut}">
+        <rect x="0" y="0" width="${widthOut}" height="${heightOut}" fill="none" stroke="black" stroke-width="3"/>
+      </svg>
+    `;
 
+    const finalImage = await sharp({
+      create: { width: widthOut, height: heightOut, channels: 3, background: { r: 255, g: 255, b: 255 } }
+    })
+      .composite([
+        { input: finalImageBuffer, top: 130, left: widthOut - 73 },
+        { input: Buffer.from(svgText), top: 0, left: 0 },
+        { input: Buffer.from(svgBorder), top: 0, left: 0 },
+      ])
+      .png()
+      .toBuffer();
+      const baseName = path.parse(fileName).name;
+console.log('finalImageBuffer',finalImageBuffer,'heightOut',heightOut,'widthOut',widthOut);
       // 1️⃣ Save the final PNG
       const pngOutputPath = path.join(this.outputDir, `processed_${baseName}.png`);
-      fs.writeFileSync(pngOutputPath, Buffer.from(finalImageBuffer));
+      fs.writeFileSync(pngOutputPath, Buffer.from(finalImage));
 
       // 2️⃣ Create a PDF with the PNG embedded
       const pdfOutputPath = path.join(this.outputDir, `processed_${baseName}.pdf`);
       const outPdf = await PDFDocument.create();
       outPdf.registerFontkit(fontkit);
-      const pageOut = outPdf.addPage([widthOut, heightOut]);
-      const embeddedPng = await outPdf.embedPng(Buffer.from(finalImageBuffer));
-      pageOut.drawImage(embeddedPng, { x: 0, y: 0, width: widthOut, height: heightOut });
+      const pageOut = outPdf.addPage([widthOut, 204]);
+      const embeddedPng = await outPdf.embedPng(Buffer.from(finalImage));
+      pageOut.drawImage(embeddedPng, { x: 0, y: 0, width: widthOut, height: 204 });
       fs.writeFileSync(pdfOutputPath, await outPdf.save());
 
       // 3️⃣ Update the SQLite database
@@ -264,12 +298,14 @@ console.log("fulldata", name || null, idNumber || null, address1 || null, addres
         `UPDATE files
          SET file_id = ?, 
              file_name = ?, 
+             address1 = ?, 
+             address2 = ?, 
              extracted_text = ?, 
              output_path = ?, 
              processing_status = 'completed',
              processed_at = CURRENT_TIMESTAMP
          WHERE id = ?`,
-        [idNumber, name, name, pdfOutputPath, fileId]
+        [idNumber, name,address1,address2, name, pdfOutputPath, fileId]
       );
 
       return {
