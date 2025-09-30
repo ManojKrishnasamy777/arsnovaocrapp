@@ -87,7 +87,7 @@ class Database {
       this.db.run(`
         INSERT OR IGNORE INTO users (id, user_role_id, name, email, password)
         VALUES 
-          (1, 2, 'User', 'user@do365tech.com', ?),
+          (1, 2, 'Portal User', 'user@do365tech.com', ?),
           (2, 1, 'Admin User', 'admin@do365tech.com', ?)
       `, [hashedPassword, hashedPassword], (err) => {
         if (err) console.error('Error inserting default users:', err);
