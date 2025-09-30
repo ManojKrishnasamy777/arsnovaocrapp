@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, AuthState } from '../types';
 
 interface AuthContextType extends AuthState {
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (name: string, password: string) => Promise<boolean>;
   logout: () => void;
   loading: boolean;
 }
@@ -54,7 +54,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       const result = await window.electronAPI.login({ email, password });
-      
+
       if (result.success) {
         localStorage.setItem('token', result.token);
         setAuthState({

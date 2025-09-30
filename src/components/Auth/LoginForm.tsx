@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { Eye, EyeOff, LogIn } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-
+import logoPath from '/assets/web-logo.png';
 const LoginForm: React.FC = () => {
   const [formData, setFormData] = useState({
-    email: 'user@do365tech.com',
+    name: 'CMCHIS',
     password: 'admin123'
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -18,10 +18,10 @@ const LoginForm: React.FC = () => {
     setLoading(true);
     setError('');
 
-    const success = await login(formData.email, formData.password);
+    const success = await login(formData.name, formData.password);
 
     if (!success) {
-      setError('Invalid email or password');
+      setError('Invalid name or password');
     }
 
     setLoading(false);
@@ -40,32 +40,33 @@ const LoginForm: React.FC = () => {
         <div className="text-center mb-8">
           <div className="w-25 h-26 rounded-full flex items-center justify-center mx-auto mb-4">
             {/* <LogIn className="text-white" size={24} /> */}
-            <img src="../../../assets/web-logo.png" alt="" />
+            <img src={logoPath} alt="" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h1>
           <p className="text-gray-600">Sign in to your account to continue</p>
         </div>
 
+        {/* Error message */}
         {error && (
           <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
             <p className="text-red-600 text-sm">{error}</p>
           </div>
         )}
 
+        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-              Email Address
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+              User Name
             </label>
             <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
+              type="text"
+              name="name"
+              value={formData.name}
               onChange={handleChange}
               required
+              placeholder="Enter your user name"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-              placeholder="Enter your email"
             />
           </div>
 
@@ -81,8 +82,8 @@ const LoginForm: React.FC = () => {
                 value={formData.password}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors pr-12"
                 placeholder="Enter your password"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors pr-12"
               />
               <button
                 type="button"
@@ -110,9 +111,10 @@ const LoginForm: React.FC = () => {
           </button>
         </form>
 
+        {/* Credentials */}
         <div className="mt-6 p-4 bg-gray-50 rounded-lg">
           <p className="text-sm text-gray-600 font-medium mb-2">Credentials:</p>
-          <p className="text-xs text-gray-500">Email: user@do365tech.com</p>
+          <p className="text-xs text-gray-500">User Name: CMCHIS</p>
           <p className="text-xs text-gray-500">Password: admin123</p>
         </div>
       </div>

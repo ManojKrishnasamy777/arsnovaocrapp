@@ -37,12 +37,25 @@ class FileService {
 
       // Start async processing
       const resData = await this.processFileAsync(fileId, uploadPath, uniqueFileName);
+      if(!resData.success){
+        const now = new Date();
+      await this.db.run(
+        `UPDATE files SET processing_status = 'error', processed_at = ? WHERE id = ?`,
+        [now.toISOString(), fileId]
+      );
       return {
-        additionalData: resData,
+ success: false,
+        error: resData.error || 'File processing failed'
+
+      };
+    } else {
+      return {
+       additionalData: resData,
         success: true,
         fileId,
         message: 'File uploaded successfully, processing started'
       };
+    }
     } catch (err) {
       console.error('Error in processFile:', err);
       return { success: false, error: err.message };
@@ -97,6 +110,10 @@ class FileService {
       // 5️⃣ Extract text from PDF
       const parsed = await pdfParse(pdfBytes.buffer);
       const text = parsed.text;
+      const filevalid = "(PMJAY-CMCHIS ஒருங்கிைணந்த திட்டம்)"
+ if(!text.includes(filevalid)){
+return { success: false, error: 'Upload Valid File.' };
+ }
       const removePatterns = ["தமிழ்நாடு அரசு", "உறுப்பினர்", "அைடயாள", "அட்ைட"];
       function cleanLine(line) {
         let cleaned = line.trim();

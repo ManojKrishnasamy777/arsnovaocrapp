@@ -1,12 +1,19 @@
 import React, { useState } from 'react';
-import { Upload, FileText, CheckCircle, AlertCircle, Edit2 } from 'lucide-react';
+import { Upload, CheckCircle, AlertCircle, Edit2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 const FileUpload: React.FC = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadedData, setUploadedData] = useState<any>({});
   const [uploadStatus, setUploadStatus] = useState<{ type: 'success' | 'error' | null; message: string }>({ type: null, message: '' });
-  const [editField, setEditField] = useState<string | null>(null);
+
+  // Separate edit states for each field
+  const [editIdNumber, setEditIdNumber] = useState(false);
+  const [editName, setEditName] = useState(false);
+  const [editAddress1, setEditAddress1] = useState(false);
+  const [editAddress2, setEditAddress2] = useState(false);
+  const [editImage, setEditImage] = useState(false);
+
   const { user } = useAuth();
 
   const handleFileSelect = async () => {
@@ -48,64 +55,24 @@ const FileUpload: React.FC = () => {
         finalImageBuffer: uploadedData.photoBuffer,
       });
 
-      // alert(
-      //   `Created successfully!${res.pngOutputPath ? `\nPNG saved at: ${res.pngOutputPath}` : ''}${res.pdfOutputPath ? `\nPDF saved at: ${res.pdfOutputPath}` : ''}`
-      // );
       setUploadStatus({ type: 'success', message: 'File Processed Completed.' });
 
       const resp = await window.electronAPI.printPdf(res.pdfOutputPath);
       if (!resp.success) console.error(resp.error);
 
-      setEditField(null);
+      // Reset
       setUploadedData({});
+      setEditIdNumber(false);
+      setEditName(false);
+      setEditAddress1(false);
+      setEditAddress2(false);
+      setEditImage(false);
       setUploadStatus({ type: null, message: '' });
     } catch (err) {
       console.error(err);
       alert('Update failed.');
     }
   };
-
-  // Render a single field with toggleable edit
-  const EditableField = ({
-    field,
-    label,
-    multiline = false,
-  }: {
-    field: string;
-    label: string;
-    multiline?: boolean;
-  }) => (
-    <div className="mb-4">
-      <label className="font-medium text-blue-900 block mb-1">{label}</label>
-      <div className="flex items-center gap-2">
-        {editField === field ? (
-          multiline ? (
-            <textarea
-              value={uploadedData[field] || ''}
-              onChange={(e) => setUploadedData({ ...uploadedData, [field]: e.target.value })}
-              rows={3}
-              className="flex-1 border rounded px-2 py-1"
-            />
-          ) : (
-            <input
-              type="text"
-              value={uploadedData[field] || ''}
-              onChange={(e) => setUploadedData({ ...uploadedData, [field]: e.target.value })}
-              className="flex-1 border rounded px-2 py-1"
-            />
-          )
-        ) : (
-          <div className="flex-1 border rounded px-2 py-1 bg-gray-100">{uploadedData[field]}</div>
-        )}
-        <button
-          className="p-1 hover:bg-gray-200 rounded"
-          onClick={() => setEditField(editField === field ? null : field)}
-        >
-          <Edit2 size={16} className="text-gray-600" />
-        </button>
-      </div>
-    </div>
-  );
 
   return (
     <div className="p-6 max-w-2xl mx-auto">
@@ -147,19 +114,108 @@ const FileUpload: React.FC = () => {
       {/* Processed Info */}
       {uploadedData.fileId && (
         <div className="mt-8 bg-blue-50 rounded-lg p-6">
-          <EditableField field="idNumber" label="ID Number" />
-          <EditableField field="name" label="Name" />
-          <EditableField field="address1" label="Address 1" multiline />
-          <EditableField field="address2" label="Address 2" multiline />
+          {/* ID Number */}
+          <div className="mb-4">
+            <label className="font-medium text-blue-900 block mb-1">ID Number</label>
+            <div className="flex items-center gap-2">
+              {editIdNumber ? (
+                <input
+                  type="text"
+                  value={uploadedData.idNumber || ''}
+                  onChange={(e) => setUploadedData({ ...uploadedData, idNumber: e.target.value })}
+                  className="flex-1 border rounded px-2 py-1"
+                />
+              ) : (
+                <div className="flex-1 border rounded px-2 py-1 bg-gray-100">{uploadedData.idNumber}</div>
+              )}
+              <button className="p-1 hover:bg-gray-200 rounded" onClick={() => setEditIdNumber(!editIdNumber)}>
+                <Edit2 size={16} className="text-gray-600" />
+              </button>
+            </div>
+          </div>
 
+          {/* Name */}
+          <div className="mb-4">
+            <label className="font-medium text-blue-900 block mb-1">Name</label>
+            <div className="flex items-center gap-2">
+              {editName ? (
+                <input
+                  type="text"
+                  value={uploadedData.name || ''}
+                  onChange={(e) => setUploadedData({ ...uploadedData, name: e.target.value })}
+                  className="flex-1 border rounded px-2 py-1"
+                />
+              ) : (
+                <div className="flex-1 border rounded px-2 py-1 bg-gray-100">{uploadedData.name}</div>
+              )}
+              <button className="p-1 hover:bg-gray-200 rounded" onClick={() => setEditName(!editName)}>
+                <Edit2 size={16} className="text-gray-600" />
+              </button>
+            </div>
+          </div>
+
+          {/* Address 1 */}
+          <div className="mb-4">
+            <label className="font-medium text-blue-900 block mb-1">Address 1</label>
+            <div className="flex items-center gap-2">
+              {editAddress1 ? (
+                <textarea
+                  value={uploadedData.address1 || ''}
+                  onChange={(e) => setUploadedData({ ...uploadedData, address1: e.target.value })}
+                  rows={3}
+                  className="flex-1 border rounded px-2 py-1"
+                />
+              ) : (
+                <div className="flex-1 border rounded px-2 py-1 bg-gray-100">{uploadedData.address1}</div>
+              )}
+              <button className="p-1 hover:bg-gray-200 rounded" onClick={() => setEditAddress1(!editAddress1)}>
+                <Edit2 size={16} className="text-gray-600" />
+              </button>
+            </div>
+          </div>
+
+          {/* Address 2 */}
+          <div className="mb-4">
+            <label className="font-medium text-blue-900 block mb-1">Address 2</label>
+            <div className="flex items-center gap-2">
+              {editAddress2 ? (
+                <textarea
+                  value={uploadedData.address2 || ''}
+                  onChange={(e) => setUploadedData({ ...uploadedData, address2: e.target.value })}
+                  rows={3}
+                  className="flex-1 border rounded px-2 py-1"
+                />
+              ) : (
+                <div className="flex-1 border rounded px-2 py-1 bg-gray-100">{uploadedData.address2}</div>
+              )}
+              <button className="p-1 hover:bg-gray-200 rounded" onClick={() => setEditAddress2(!editAddress2)}>
+                <Edit2 size={16} className="text-gray-600" />
+              </button>
+            </div>
+          </div>
+
+          {/* Image */}
           <div className="mb-4">
             <label className="font-medium text-blue-900 block mb-1">Image</label>
-            <img
-              src={`data:image/png;base64,${uploadedData.photoBufferImg}`}
-              alt="Processed"
-              className="mt-2 rounded border"
-              style={{ width: 100, height: 'auto' }}
-            />
+            <div className="flex items-center gap-2">
+              <img
+                src={`data:image/png;base64,${uploadedData.photoBufferImg}`}
+                alt="Processed"
+                className="mt-2 rounded border"
+                style={{ width: 100, height: 'auto' }}
+              />
+              {/* <button className="p-1 hover:bg-gray-200 rounded" onClick={() => setEditImage(!editImage)}>
+                <Edit2 size={16} className="text-gray-600" />
+              </button> */}
+            </div>
+            {editImage && (
+              <input
+                type="text"
+                value={uploadedData.photoBufferImg}
+                onChange={(e) => setUploadedData({ ...uploadedData, photoBufferImg: e.target.value })}
+                className="mt-2 border rounded px-2 py-1 w-full"
+              />
+            )}
           </div>
 
           <div className="text-right">

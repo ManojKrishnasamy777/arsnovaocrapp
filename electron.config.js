@@ -6,35 +6,42 @@ module.exports = {
 
   directories: {
     output: 'dist-app',
-    buildResources: 'assets' // icons & extra resources
+    buildResources: 'assets', // icons & extra resources
   },
 
   files: [
-    'dist/**/*',           // Vite build
-    'electron/**/*',       // Electron main & preload
+    'dist/**/*',           // Vite build output
+    'electron/**/*',       // Electron main & preload scripts
     'package.json',
-    'node_modules/**/!(concurrently|vite|eslint|typescript|tailwindcss)'
+    'public/**/*',         // Include public folder and all assets
+    'node_modules/**/!(concurrently|vite|eslint|typescript|tailwindcss)',
   ],
 
-  extraResources: [],
+  extraResources: [
+    {
+      from: 'public/',
+      to: 'public',
+      filter: ['**/*'],
+    },
+  ],
 
   asar: true,
 
   mac: {
     category: 'public.app-category.productivity',
     target: ['dmg'],
-    defaultArch: 'universal'
+    defaultArch: 'universal',
   },
 
   win: {
     target: ['nsis'],
-    defaultArch: 'x64'
+    defaultArch: 'x64',
   },
 
   linux: {
     target: ['AppImage'],
     defaultArch: 'x64',
-    category: 'Utility'
+    category: 'Utility',
   },
 
   // Icons must exist: icon.ico (win), icon.icns (mac), icon.png (linux)
@@ -44,13 +51,13 @@ module.exports = {
 
   extraMetadata: {
     description: 'A desktop application for extracting text from PDF files using OCR',
-    author: 'Your Name <youremail@example.com>'
+    author: 'Do365 Technologies Pvt Ltd',
   },
 
   nsis: {
     oneClick: false,
     perMachine: true,
     allowElevation: true,
-    allowToChangeInstallationDirectory: true
-  }
+    allowToChangeInstallationDirectory: true,
+  },
 };

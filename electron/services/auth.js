@@ -7,14 +7,14 @@ class AuthService {
     this.JWT_SECRET = 'your-secret-key-change-in-production';
   }
 
-  async login(email, password) {
+  async login(name, password) {
     try {
       const users = await this.db.query(`
         SELECT u.*, ur.name as role_name 
         FROM users u 
         JOIN user_roles ur ON u.user_role_id = ur.id 
-        WHERE u.email = ?
-      `, [email]);
+        WHERE u.name = ?
+      `, [name]);
 
       if (users.length === 0) {
         throw new Error('User not found');
