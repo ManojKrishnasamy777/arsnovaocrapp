@@ -1,8 +1,8 @@
 const path = require('path');
 
 module.exports = {
-  appId: 'com.yourcompany.arsnova-ocr',
-  productName: 'Arsnova OCR',
+  appId: 'com.yourcompany.PMJAY-CMCHIS-ocr',
+  productName: 'PMJAY-CMCHIS',
 
   directories: {
     output: 'dist-app',

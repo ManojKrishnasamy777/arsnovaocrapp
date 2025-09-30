@@ -1,5 +1,5 @@
 {
-  "name": "arsnova",
+  "name": "Do365 Tech",
   "private": true,
   "version": "1.0.0",
   "description": "A desktop app for PDF OCR processing",
@@ -39,8 +39,10 @@
     "pdf-to-png-converter": "^3.10.0",
     "pdf2pic": "^3.2.0",
     "pdfjs-dist": "^5.4.149",
+    "quill": "^2.0.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-quill": "^2.0.0",
     "sharp": "^0.34.4",
     "sqlite3": "^5.1.7",
     "tesseract.js": "^5.1.1",

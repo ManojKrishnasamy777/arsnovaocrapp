@@ -31,7 +31,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, onViewChange }) => {
   return (
     <div className="w-64 bg-gray-900 text-white h-screen flex flex-col">
       <div className="p-6 border-b border-gray-700">
-        <h1 className="text-xl font-bold">Arsnova</h1>
+        <h1 className="text-xl font-bold">PMJAY-CMCHIS</h1>
         <p className="text-sm text-gray-400 mt-1">{user?.name}</p>
         <p className="text-xs text-gray-500">{user?.role_name}</p>
       </div>
