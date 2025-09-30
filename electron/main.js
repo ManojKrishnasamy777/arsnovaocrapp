@@ -1,9 +1,11 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog,shell } = require('electron');
 const path = require('path');
 
 const isDev = process.env.NODE_ENV === 'development';
 
 let mainWindow;
+const fs = require('fs'); 
+
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -114,6 +116,17 @@ ipcMain.handle('files:updateProcessed', (e, args) =>
   console.log('args in main',args) ||
   fileService.updateProcessed(args.fileId, args.fileName, args.idNumber, args.name, args.finalImageBuffer, args.address1, args.address2)
 );
+
+ipcMain.handle('print-pdf', async (event, pdfPath) => {
+ try {
+    const result = await shell.openPath(pdfPath);
+    if (result) throw new Error(result);
+    return { success: true };
+  } catch (err) {
+    console.error('Error opening PDF:', err);
+    return { success: false, error: err.message };
+  }
+});
 
 // ---------------------------
 // Dialog handler

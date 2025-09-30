@@ -30,7 +30,7 @@ const RoleManagement: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       let result;
       if (editingRole) {
@@ -113,7 +113,7 @@ const RoleManagement: React.FC = () => {
             resetForm();
             setShowModal(true);
           }}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+          className="bg-[#2D3A7F] text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
         >
           <Plus size={20} />
           Add Role
@@ -214,7 +214,7 @@ const RoleManagement: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors"
+                  className="px-4 py-2 bg-[#2D3A7F] text-white hover:bg-blue-700 rounded-lg transition-colors"
                 >
                   {editingRole ? 'Update' : 'Create'} Role
                 </button>

@@ -31,7 +31,7 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
           </button>
 
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 bg-[#2D3A7F] rounded-full flex items-center justify-center">
               <span className="text-white text-sm font-medium">
                 {user?.name?.[0]?.toUpperCase() ?? ''}
               </span>

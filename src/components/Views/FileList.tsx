@@ -70,8 +70,13 @@ const FileList: React.FC = () => {
     });
   };
 
-  const handleViewExtractedText = (file: FileRecord) => {
-    setSelectedFile(file);
+  const handleViewExtractedText = async (file: FileRecord) => {
+    if (!file.output_path) {
+      console.error('No output path available for this file.');
+      return;
+    }
+    const resp = await window.electronAPI.printPdf(file.output_path);
+    if (!resp.success) console.error(resp.error);
   };
 
   if (loading) {

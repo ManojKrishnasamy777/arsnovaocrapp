@@ -24,7 +24,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getUserFiles: (userId) => ipcRenderer.invoke('files:getUserFiles', userId),
   updateProcessedFile: (data) => ipcRenderer.invoke('files:updateProcessed', data),
 
-  
+  printPdf: (pdfPath) => ipcRenderer.invoke('print-pdf', pdfPath),
+
   // Dialog methods
   showOpenDialog: () => ipcRenderer.invoke('dialog:showOpenDialog'),
 });

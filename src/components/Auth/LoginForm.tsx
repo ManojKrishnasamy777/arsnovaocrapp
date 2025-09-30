@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 
 const LoginForm: React.FC = () => {
   const [formData, setFormData] = useState({
-    email: 'admin@app.com',
+    email: 'user@do365tech.com',
     password: 'admin123'
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -19,11 +19,11 @@ const LoginForm: React.FC = () => {
     setError('');
 
     const success = await login(formData.email, formData.password);
-    
+
     if (!success) {
       setError('Invalid email or password');
     }
-    
+
     setLoading(false);
   };
 
@@ -35,11 +35,12 @@ const LoginForm: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#2D3A7F] flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <LogIn className="text-white" size={24} />
+          <div className="w-25 h-26 rounded-full flex items-center justify-center mx-auto mb-4">
+            {/* <LogIn className="text-white" size={24} /> */}
+            <img src="../../../assets/web-logo.png" alt="" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h1>
           <p className="text-gray-600">Sign in to your account to continue</p>
@@ -96,7 +97,7 @@ const LoginForm: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full bg-[#3B4A99] text-white py-3 px-4 rounded-lg font-medium hover:bg-[#2D3A7F] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {loading ? (
               <div className="flex items-center justify-center gap-2">
@@ -110,8 +111,8 @@ const LoginForm: React.FC = () => {
         </form>
 
         <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-          <p className="text-sm text-gray-600 font-medium mb-2">Demo Credentials:</p>
-          <p className="text-xs text-gray-500">Email: admin@app.com</p>
+          <p className="text-sm text-gray-600 font-medium mb-2">Credentials:</p>
+          <p className="text-xs text-gray-500">Email: user@do365tech.com</p>
           <p className="text-xs text-gray-500">Password: admin123</p>
         </div>
       </div>

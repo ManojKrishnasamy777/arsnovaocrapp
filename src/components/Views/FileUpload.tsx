@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
-import { Upload, FileText, CheckCircle, AlertCircle, Clock, Edit2 } from 'lucide-react';
+import { Upload, FileText, CheckCircle, AlertCircle, Edit2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 const FileUpload: React.FC = () => {
@@ -49,10 +47,15 @@ const FileUpload: React.FC = () => {
         address2: uploadedData.address2,
         finalImageBuffer: uploadedData.photoBuffer,
       });
-      alert(
-        `Created successfully!${res.pngOutputPath ? `\nPNG saved at: ${res.pngOutputPath}` : ''}${res.pdfOutputPath ? `\nPDF saved at: ${res.pdfOutputPath}` : ''
-        }`
-      );
+
+      // alert(
+      //   `Created successfully!${res.pngOutputPath ? `\nPNG saved at: ${res.pngOutputPath}` : ''}${res.pdfOutputPath ? `\nPDF saved at: ${res.pdfOutputPath}` : ''}`
+      // );
+      setUploadStatus({ type: 'success', message: 'File Processed Completed.' });
+
+      const resp = await window.electronAPI.printPdf(res.pdfOutputPath);
+      if (!resp.success) console.error(resp.error);
+
       setEditField(null);
       setUploadedData({});
       setUploadStatus({ type: null, message: '' });
@@ -62,14 +65,46 @@ const FileUpload: React.FC = () => {
     }
   };
 
-  // small reusable editor wrapper
-  const RichEditor = ({ field }: { field: string }) => (
-    <ReactQuill
-      theme="snow"
-      value={uploadedData[field] || ''}
-      onChange={(val) => setUploadedData({ ...uploadedData, [field]: val })}
-      className="border rounded bg-white"
-    />
+  // Render a single field with toggleable edit
+  const EditableField = ({
+    field,
+    label,
+    multiline = false,
+  }: {
+    field: string;
+    label: string;
+    multiline?: boolean;
+  }) => (
+    <div className="mb-4">
+      <label className="font-medium text-blue-900 block mb-1">{label}</label>
+      <div className="flex items-center gap-2">
+        {editField === field ? (
+          multiline ? (
+            <textarea
+              value={uploadedData[field] || ''}
+              onChange={(e) => setUploadedData({ ...uploadedData, [field]: e.target.value })}
+              rows={3}
+              className="flex-1 border rounded px-2 py-1"
+            />
+          ) : (
+            <input
+              type="text"
+              value={uploadedData[field] || ''}
+              onChange={(e) => setUploadedData({ ...uploadedData, [field]: e.target.value })}
+              className="flex-1 border rounded px-2 py-1"
+            />
+          )
+        ) : (
+          <div className="flex-1 border rounded px-2 py-1 bg-gray-100">{uploadedData[field]}</div>
+        )}
+        <button
+          className="p-1 hover:bg-gray-200 rounded"
+          onClick={() => setEditField(editField === field ? null : field)}
+        >
+          <Edit2 size={16} className="text-gray-600" />
+        </button>
+      </div>
+    </div>
   );
 
   return (
@@ -92,38 +127,19 @@ const FileUpload: React.FC = () => {
           <button
             onClick={handleFileSelect}
             disabled={uploading}
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="bg-[#2D3A7F] text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {uploading ? (
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                Uploading...
-              </div>
-            ) : (
-              'Choose File'
-            )}
+            {uploading ? 'Uploading...' : 'Choose File'}
           </button>
         </div>
       </div>
 
       {/* Status Message */}
       {uploadStatus.type && (
-        <div
-          className={`mt-6 p-4 rounded-lg border ${uploadStatus.type === 'success' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
-            }`}
-        >
+        <div className={`mt-6 p-4 rounded-lg border ${uploadStatus.type === 'success' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
           <div className="flex items-center gap-2">
-            {uploadStatus.type === 'success' ? (
-              <CheckCircle className="text-green-600" size={20} />
-            ) : (
-              <AlertCircle className="text-red-600" size={20} />
-            )}
-            <p
-              className={`text-sm font-medium ${uploadStatus.type === 'success' ? 'text-green-800' : 'text-red-800'
-                }`}
-            >
-              {uploadStatus.message}
-            </p>
+            {uploadStatus.type === 'success' ? <CheckCircle className="text-green-600" size={20} /> : <AlertCircle className="text-red-600" size={20} />}
+            <p className={`text-sm font-medium ${uploadStatus.type === 'success' ? 'text-green-800' : 'text-red-800'}`}>{uploadStatus.message}</p>
           </div>
         </div>
       )}
@@ -131,56 +147,28 @@ const FileUpload: React.FC = () => {
       {/* Processed Info */}
       {uploadedData.fileId && (
         <div className="mt-8 bg-blue-50 rounded-lg p-6">
-          <h4 className="text-lg font-semibold text-blue-900 mb-3">Processed Information</h4>
-          <div className="space-y-6">
-            {['idNumber', 'name', 'address1', 'address2'].map((field) => (
-              <div key={field} className="flex items-start gap-3">
-                <FileText className="text-blue-600 mt-0.5" size={16} />
-                <div className="flex-1">
-                  <div className="flex justify-between items-center mb-1">
-                    <p className="font-medium text-blue-900 capitalize">{field}</p>
-                    <button
-                      className="ml-2 p-1 hover:bg-gray-200 rounded"
-                      onClick={() => setEditField(editField === field ? null : field)}
-                    >
-                      <Edit2 size={16} className="text-gray-600" />
-                    </button>
-                  </div>
-                  {editField === field ? (
-                    <RichEditor field={field} />
-                  ) : (
-                    <div
-                      className="prose max-w-none text-sm text-blue-700"
-                      dangerouslySetInnerHTML={{ __html: uploadedData[field] }}
-                    />
-                  )}
-                </div>
-              </div>
-            ))}
+          <EditableField field="idNumber" label="ID Number" />
+          <EditableField field="name" label="Name" />
+          <EditableField field="address1" label="Address 1" multiline />
+          <EditableField field="address2" label="Address 2" multiline />
 
-            {/* Processed Image */}
-            <div className="flex items-start gap-3">
-              <FileText className="text-blue-600 mt-0.5" size={16} />
-              <div>
-                <p className="font-medium text-blue-900">Image</p>
-                <img
-                  src={`data:image/png;base64,${uploadedData.photoBufferImg}`}
-                  alt="Processed"
-                  className="mt-2 rounded border"
-                  style={{ width: 100, height: 'auto' }}
-                />
-              </div>
-            </div>
+          <div className="mb-4">
+            <label className="font-medium text-blue-900 block mb-1">Image</label>
+            <img
+              src={`data:image/png;base64,${uploadedData.photoBufferImg}`}
+              alt="Processed"
+              className="mt-2 rounded border"
+              style={{ width: 100, height: 'auto' }}
+            />
+          </div>
 
-            {/* Update Button */}
-            <div className="mt-4 text-right">
-              <button
-                onClick={handleSave}
-                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors"
-              >
-                Verify
-              </button>
-            </div>
+          <div className="text-right">
+            <button
+              onClick={handleSave}
+              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors"
+            >
+              Verify
+            </button>
           </div>
         </div>
       )}

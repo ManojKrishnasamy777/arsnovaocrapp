@@ -42,7 +42,7 @@ const UserManagement: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       let result;
       if (editingUser) {
@@ -114,7 +114,7 @@ const UserManagement: React.FC = () => {
     return (
       <div className="p-6">
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 bg-[#2D3A7F]"></div>
         </div>
       </div>
     );
@@ -132,7 +132,7 @@ const UserManagement: React.FC = () => {
             resetForm();
             setShowModal(true);
           }}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+          className="bg-[#2D3A7F] text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
         >
           <Plus size={20} />
           Add User
@@ -164,7 +164,7 @@ const UserManagement: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10">
-                        <div className="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center">
+                        <div className="h-10 w-10 rounded-full bg-[#2D3A7F] flex items-center justify-center">
                           <span className="text-white font-medium">
                             {user.name.charAt(0).toUpperCase()}
                           </span>
@@ -177,11 +177,10 @@ const UserManagement: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      user.role_name === 'Admin' 
-                        ? 'bg-purple-100 text-purple-800'
-                        : 'bg-green-100 text-green-800'
-                    }`}>
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${user.role_name === 'Admin'
+                      ? 'bg-purple-100 text-purple-800'
+                      : 'bg-green-100 text-green-800'
+                      }`}>
                       {user.role_name}
                     </span>
                   </td>
@@ -295,7 +294,7 @@ const UserManagement: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors"
+                  className="px-4 py-2 bg-[#2D3A7F] text-white hover:bg-blue-700 rounded-lg transition-colors"
                 >
                   {editingUser ? 'Update' : 'Create'} User
                 </button>
