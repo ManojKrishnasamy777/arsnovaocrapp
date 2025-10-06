@@ -1,77 +1,33 @@
-import React, { useState } from 'react';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
-import LoginForm from './components/Auth/LoginForm';
-import Sidebar from './components/Layout/Sidebar';
-import Header from './components/Layout/Header';
-import Dashboard from './components/Views/Dashboard';
-import FileUpload from './components/Views/FileUpload';
-import FileList from './components/Views/FileList';
-import UserManagement from './components/Views/UserManagement';
-import RoleManagement from './components/Views/RoleManagement';
+import { PropsWithChildren, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { IRootState } from './store';
+import { toggleRTL, toggleTheme, toggleLocale, toggleMenu, toggleLayout, toggleAnimation, toggleNavbar, toggleSemidark } from './store/themeConfigSlice';
+import store from './store';
 
-const AppContent: React.FC = () => {
-  const { isAuthenticated, loading } = useAuth();
-  const [activeView, setActiveView] = useState('dashboard');
+function App({ children }: PropsWithChildren) {
+    const themeConfig = useSelector((state: IRootState) => state.themeConfig);
+    const dispatch = useDispatch();
 
-  if (loading) {
+    useEffect(() => {
+        dispatch(toggleTheme(localStorage.getItem('theme') || themeConfig.theme));
+        dispatch(toggleMenu(localStorage.getItem('menu') || themeConfig.menu));
+        dispatch(toggleLayout(localStorage.getItem('layout') || themeConfig.layout));
+        dispatch(toggleRTL(localStorage.getItem('rtlClass') || themeConfig.rtlClass));
+        dispatch(toggleAnimation(localStorage.getItem('animation') || themeConfig.animation));
+        dispatch(toggleNavbar(localStorage.getItem('navbar') || themeConfig.navbar));
+        dispatch(toggleLocale(localStorage.getItem('i18nextLng') || themeConfig.locale));
+        dispatch(toggleSemidark(localStorage.getItem('semidark') || themeConfig.semidark));
+    }, [dispatch, themeConfig.theme, themeConfig.menu, themeConfig.layout, themeConfig.rtlClass, themeConfig.animation, themeConfig.navbar, themeConfig.locale, themeConfig.semidark]);
+
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
+        <div
+            className={`${(store.getState().themeConfig.sidebar && 'toggle-sidebar') || ''} ${themeConfig.menu} ${themeConfig.layout} ${
+                themeConfig.rtlClass
+            } main-section antialiased relative font-nunito text-sm font-normal`}
+        >
+            {children}
+        </div>
     );
-  }
-
-  if (!isAuthenticated) {
-    return <LoginForm />;
-  }
-
-  const getViewTitle = (view: string) => {
-    const titles: Record<string, string> = {
-      dashboard: 'Dashboard',
-      upload: 'Upload PDF',
-      files: 'Files',
-      users: 'User Management',
-      roles: 'Role Management',
-    };
-    return titles[view] || 'Dashboard';
-  };
-
-  const renderView = () => {
-    switch (activeView) {
-      case 'dashboard':
-        return <Dashboard />;
-      case 'upload':
-        return <FileUpload />;
-      case 'files':
-        return <FileList />;
-      case 'users':
-        return <UserManagement />;
-      case 'roles':
-        return <RoleManagement />;
-      default:
-        return <Dashboard />;
-    }
-  };
-
-  return (
-    <div className="flex h-screen bg-gray-100">
-      <Sidebar activeView={activeView} onViewChange={setActiveView} />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header title={getViewTitle(activeView)} />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto">
-          {renderView()}
-        </main>
-      </div>
-    </div>
-  );
-};
-
-const App: React.FC = () => {
-  return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
-  );
-};
+}
 
 export default App;
