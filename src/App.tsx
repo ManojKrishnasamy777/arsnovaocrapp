@@ -8,10 +8,11 @@ import FileUpload from './components/Views/FileUpload';
 import FileList from './components/Views/FileList';
 import UserManagement from './components/Views/UserManagement';
 import RoleManagement from './components/Views/RoleManagement';
+import Footer from './components/Layout/Footer';
 
 const AppContent: React.FC = () => {
   const { isAuthenticated, loading } = useAuth();
-  const [activeView, setActiveView] = useState('dashboard');
+  const [activeView, setActiveView] = useState('upload');
 
   if (loading) {
     return (
@@ -54,13 +55,22 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen overflow-hidden bg-gray-100">
+      {/* Sidebar */}
       <Sidebar activeView={activeView} onViewChange={setActiveView} />
+
+      {/* Main content area */}
       <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Header */}
         <Header title={getViewTitle(activeView)} />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto">
+
+        {/* Scrollable main content */}
+        <main className="flex-1 overflow-y-auto p-4">
           {renderView()}
         </main>
+
+        {/* Sticky footer */}
+        <Footer />
       </div>
     </div>
   );

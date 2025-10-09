@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Upload, CheckCircle, AlertCircle, Edit2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -13,9 +13,17 @@ const FileUpload: React.FC = () => {
   const [editAddress1, setEditAddress1] = useState(false);
   const [editAddress2, setEditAddress2] = useState(false);
   const [editImage, setEditImage] = useState(false);
-
   const { user } = useAuth();
+  const uploadDetailsRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    if (uploadedData.fileId && uploadDetailsRef.current) {
+      uploadDetailsRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  }, [uploadedData.fileId]);
   const handleFileSelect = async () => {
     try {
       const result = await window.electronAPI.showOpenDialog();
@@ -33,10 +41,25 @@ const FileUpload: React.FC = () => {
 
       if (uploadResult.success) {
         setUploadStatus({ type: 'success', message: 'File uploaded successfully! Processing started in background.' });
+        // if (uploadDetailsRef.current) {
+        //   uploadDetailsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // }
       } else {
+        setUploadedData({});
+        setEditIdNumber(false);
+        setEditName(false);
+        setEditAddress1(false);
+        setEditAddress2(false);
+        setEditImage(false);
         setUploadStatus({ type: 'error', message: uploadResult.error || 'Upload failed' });
       }
     } catch (error) {
+      setUploadedData({});
+      setEditIdNumber(false);
+      setEditName(false);
+      setEditAddress1(false);
+      setEditAddress2(false);
+      setEditImage(false);
       setUploadStatus({ type: 'error', message: 'An error occurred during upload' });
     } finally {
       setUploading(false);
@@ -113,7 +136,7 @@ const FileUpload: React.FC = () => {
 
       {/* Processed Info */}
       {uploadedData.fileId && (
-        <div className="mt-8 bg-blue-50 rounded-lg p-6">
+        <div ref={uploadDetailsRef} id='uploaddetails' className="mt-8 bg-blue-50 rounded-lg p-6">
           {/* ID Number */}
           <div className="mb-4">
             <label className="font-medium text-blue-900 block mb-1">ID Number</label>
@@ -207,6 +230,14 @@ const FileUpload: React.FC = () => {
               {/* <button className="p-1 hover:bg-gray-200 rounded" onClick={() => setEditImage(!editImage)}>
                 <Edit2 size={16} className="text-gray-600" />
               </button> */}
+              <div className="text-end flex-1">
+                <button
+                  onClick={handleSave}
+                  className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors"
+                >
+                  Verify
+                </button>
+              </div>
             </div>
             {editImage && (
               <input
@@ -216,16 +247,10 @@ const FileUpload: React.FC = () => {
                 className="mt-2 border rounded px-2 py-1 w-full"
               />
             )}
+
           </div>
 
-          <div className="text-right">
-            <button
-              onClick={handleSave}
-              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors"
-            >
-              Verify
-            </button>
-          </div>
+
         </div>
       )}
     </div>

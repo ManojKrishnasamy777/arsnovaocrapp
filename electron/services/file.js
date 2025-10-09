@@ -103,7 +103,7 @@ class FileService {
           width: 103,
           height: 93
         })
-        .resize(63, 63)
+        .resize(200, 200)
         .png()
         .toBuffer();
 
@@ -209,35 +209,33 @@ return { success: false, error: 'Upload Valid File.' };
     }
   }
 
-  async updateProcessed(fileId, fileName, idNumber, name, finalImageBuffer, address1, address2) {
+ async updateProcessed(fileId, fileName, idNumber, name, finalImageBuffer, address1, address2) {
     try {
-      const widthOut = 325, heightOut = 204;
+      // Same resolution as processFileAsync
+      const widthOut = 1300, heightOut = 816;
       const svgText = `
         <svg width="${widthOut}" height="${heightOut}">
           <style>
-            .number { fill:black; font-size:11px; font-weight:bold; }
-            .label { fill:black; font-size:11px; font-weight:bold; }
-            .address { fill:black; font-size:11px; font-weight:bold; }
+            .number { fill:black; font-size:44px; font-weight:bold; font-family: Arial, sans-serif; }
+            .label { fill:black; font-size:44px; font-weight:bold; font-family: Arial, sans-serif; }
+            .address { fill:black; font-size:44px; font-weight:bold; font-family: Arial, sans-serif; }
           </style>
-          <text x="8" y="150" class="number">${idNumber}</text>
-          <text x="8" y="163" class="label">${name}</text>
-          <text x="8" y="179" class="address">${address1}</text>
-          <text x="8" y="195" class="address">${address2}</text>
+          <text x="32" y="600" class="number">${idNumber}</text>
+          <text x="32" y="650" class="label">${name}</text>
+          <text x="32" y="700" class="address">${address1}</text>
+          <text x="32" y="750" class="address">${address2}</text>
         </svg>
       `;
-      // const svgBorder = `
-      //   <svg width="${widthOut}" height="${heightOut}">
-      //     <rect x="0" y="0" width="${widthOut}" height="${heightOut}" fill="none" stroke="black" stroke-width="3"/>
-      //   </svg>
-      // `;
 
+      // ✅ Dynamic placement of photo
       const finalImage = await sharp({
         create: { width: widthOut, height: heightOut, channels: 3, background: { r: 255, g: 255, b: 255 } }
       }).composite([
-        { input: finalImageBuffer, top: 135, left: widthOut - 73 },
-        { input: Buffer.from(svgText), top: 0, left: 0 },
-        // { input: Buffer.from(svgBorder), top: 0, left: 0 },
-      ]).png().toBuffer();
+        { input: finalImageBuffer, top: heightOut - 230, left: widthOut - 230 },
+        { input: Buffer.from(svgText), top: 0, left: 0 }
+      ])
+        .png({ quality: 100, compressionLevel: 0 })
+        .toBuffer();
 
       const baseName = path.parse(fileName).name;
 
