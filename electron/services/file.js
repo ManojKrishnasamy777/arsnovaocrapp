@@ -103,7 +103,7 @@ class FileService {
           width: 103,
           height: 93
         })
-        .resize(265, 204, { fit: 'cover' })
+        .resize(270, 204, { fit: 'cover' })
         .png()
         .toBuffer();
 
