@@ -4,16 +4,19 @@ module.exports = {
   appId: 'com.yourcompany.PMJAY-CMCHIS-ocr',
   productName: 'PMJAY-CMCHIS',
 
+  // Copyright info
+  copyright: '© 2025 Do365 Technologies Pvt Ltd. All rights reserved.',
+
   directories: {
     output: 'dist-app',
-    buildResources: 'assets', // icons & extra resources
+    buildResources: 'assets',
   },
 
   files: [
-    'dist/**/*',           // Vite build output
-    'electron/**/*',       // Electron main & preload scripts
+    'dist/**/*',
+    'electron/**/*',
     'package.json',
-    'public/**/*',         // Include public folder and all assets
+    'public/**/*',
     'node_modules/**/!(concurrently|vite|eslint|typescript|tailwindcss)',
   ],
 
@@ -36,6 +39,9 @@ module.exports = {
   win: {
     target: ['nsis'],
     defaultArch: 'x64',
+    // ✅ Use these instead of companyName
+    publisherName: 'Do365 Technologies Pvt Ltd', 
+    legalTrademarks: 'PMJAY-CMCHIS is a product of Do365 Technologies Pvt Ltd',
   },
 
   linux: {
@@ -44,7 +50,6 @@ module.exports = {
     category: 'Utility',
   },
 
-  // Icons must exist: icon.ico (win), icon.icns (mac), icon.png (linux)
   icon: path.join(__dirname, 'assets', 'icon'),
 
   publish: [],
