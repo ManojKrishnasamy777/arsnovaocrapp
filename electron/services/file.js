@@ -110,7 +110,9 @@ class FileService {
       // 5️⃣ Extract text from PDF
       const parsed = await pdfParse(pdfBytes.buffer);
       const text = parsed.text;
-      const filevalid = "(PMJAY-CMCHIS ஒருங்கிைணந்த திட்டம்)"
+      debugger
+      const filevalid = "(PMJAY-CMCHIS"
+      console.log('Extracted Text:', text);
  if(!text.includes(filevalid)){
 return { success: false, error: 'Upload Valid File.' };
  }
