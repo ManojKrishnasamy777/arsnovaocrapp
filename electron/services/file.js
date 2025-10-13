@@ -231,7 +231,7 @@ return { success: false, error: 'Upload Valid File.' };
       const finalImage = await sharp({
         create: { width: widthOut, height: heightOut, channels: 3, background: { r: 255, g: 255, b: 255 } }
       }).composite([
-        { input: finalImageBuffer, top: heightOut - 230, left: widthOut - 285 },
+        { input: finalImageBuffer, top: heightOut - 260, left: widthOut - 285 },
         { input: Buffer.from(svgText), top: 0, left: 0 }
       ])
         .png({ quality: 100, compressionLevel: 0 })
