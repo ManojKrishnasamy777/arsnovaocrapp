@@ -68,11 +68,14 @@ declare global {
         finalImageBuffer: Uint8Array; // or number[]
       }) => Promise<void>;
 
+      getHddSerial: () => Promise<string | null>;
+
       printPdf: (pdfPath: string) => Promise<any>;
 
 
       // Dialog methods
       showOpenDialog: () => Promise<any>;
     };
+
   }
 }

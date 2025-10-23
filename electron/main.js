@@ -57,10 +57,12 @@ app.on('activate', () => {
 const Database = require('./database');
 const AuthService = require('./services/auth');
 const FileService = require('./services/file');
+const LicenseService = require('./services/license');
 
 const db = new Database();
 const authService = new AuthService(db);
 const fileService = new FileService(db);
+const licenseService = new LicenseService(db);
 
 // ---------------------------
 // Auth handlers
@@ -70,7 +72,7 @@ ipcMain.handle('auth:login', (event, { email, password }) =>
 );
 
 ipcMain.handle('auth:register', (event, userData) =>
-  authService.register(userData)
+  authService.registerLicense(userData)
 );
 
 ipcMain.handle('auth:verify-token', (event, token) =>
@@ -126,6 +128,14 @@ ipcMain.handle('print-pdf', async (event, pdfPath) => {
     console.error('Error opening PDF:', err);
     return { success: false, error: err.message };
   }
+});
+
+// ---------------------------
+// License handlers
+// ---------------------------
+
+ipcMain.handle('get-hdd-serial', async () => {
+  return await licenseService.getHddSerial();
 });
 
 // ---------------------------

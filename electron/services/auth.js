@@ -79,6 +79,35 @@ class AuthService {
         success: false,
         error: error.message
       };
+    }   
+  }
+
+
+   async registerLicense(userData) {
+    try {
+      const { name, email, company_name, mobile,address } = userData;
+      
+      // Check if user already exists
+      const existingUsers = await this.db.query('SELECT id FROM register WHERE email = ?', [email]);
+      if (existingUsers.length > 0) {
+        throw new Error('Given email already exists');
+      }
+
+      
+      const result = await this.db.run(`
+        INSERT INTO users (name, email, company_name, mobile,address) 
+        VALUES (?, ?, ?, ?)
+      `, [name, email, company_name, mobile,address]);
+
+      return {
+        success: true,
+        userId: result.id
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
     }
   }
 
@@ -120,6 +149,10 @@ class AuthService {
 
   async createUser(userData) {
     return await this.register(userData);
+  }
+
+  async createRegistration(userData) {
+    return await this.registerLicense(userData);
   }
 
   async updateUser(id, userData) {

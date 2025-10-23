@@ -78,6 +78,32 @@ class Database {
         if (err) return console.error('Error creating files table:', err);
       });
 
+       this.db.run(`
+        CREATE TABLE IF NOT EXISTS license (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          system_code TEXT NOT NULL UNIQUE,
+          license_key TEXT NOT NULL,
+          registered_id TEXT,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `, (err) => {
+        if (err) return console.error('Error creating license table:', err);
+      });
+
+      this.db.run(`
+        CREATE TABLE IF NOT EXISTS registration (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          company_name TEXT NOT NULL,
+          email TEXT NOT NULL UNIQUE,
+          mobile NUMBER NOT NULL,
+          address TEXT NOT NULL,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `, (err) => {
+        if (err) return console.error('Error creating registration table:', err);
+      });
+
       // 4️⃣ Insert default roles
       this.db.run(`INSERT OR IGNORE INTO user_roles (id, name) VALUES (1, 'Admin')`);
       this.db.run(`INSERT OR IGNORE INTO user_roles (id, name) VALUES (2, 'User')`);

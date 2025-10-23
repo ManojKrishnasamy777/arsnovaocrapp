@@ -24,6 +24,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getUserFiles: (userId) => ipcRenderer.invoke('files:getUserFiles', userId),
   updateProcessedFile: (data) => ipcRenderer.invoke('files:updateProcessed', data),
 
+
+  // License methods
+    getHddSerial: () => ipcRenderer.invoke('get-hdd-serial'),
+
+
   printPdf: (pdfPath) => ipcRenderer.invoke('print-pdf', pdfPath),
 
   // Dialog methods
