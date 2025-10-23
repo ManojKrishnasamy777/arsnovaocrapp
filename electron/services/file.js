@@ -116,7 +116,7 @@ class FileService {
  if(!text.includes(filevalid)){
 return { success: false, error: 'Upload Valid File.' };
  }
-      const removePatterns = ["தமிழ்நாடு அரசு", "உறுப்பினர்", "அைடயாள", "அட்ைட"];
+      const removePatterns = ["தமிழ்நாடு அரசு", "உறுப்பினர்", "அைடயாள", "அட்ைட","தமிநா அர"];
       function cleanLine(line) {
         let cleaned = line.trim();
         for (const p of removePatterns) {
@@ -139,6 +139,20 @@ return { success: false, error: 'Upload Valid File.' };
         }
       }
 
+
+            function sanitizeText(text) {
+  if (!text) return "";
+  return text
+    .replace(/[\0-\x1F\x7F]/g, '')       // remove control chars
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;')
+    .replace(/தமிநா அர/g, '')           // remove unwanted Tamil word
+    .trim();
+}
+
       // 6️⃣ Create final PNG with overlay
       const widthOut = 325, heightOut = 204;
       const svgText = `
@@ -150,8 +164,8 @@ return { success: false, error: 'Upload Valid File.' };
           </style>
           <text x="8" y="150" class="number">${idNumber}</text>
           <text x="8" y="160" class="label">${name}</text>
-          <text x="8" y="175" class="address">${address1}</text>
-          <text x="8" y="195" class="address">${address2}</text>
+          <text x="8" y="175" class="address">${sanitizeText(address1)}</text>
+          <text x="8" y="195" class="address">${sanitizeText(address2)}</text>
         </svg>
       `;
       // const svgBorder = `
@@ -213,6 +227,19 @@ return { success: false, error: 'Upload Valid File.' };
 
  async updateProcessed(fileId, fileName, idNumber, name, finalImageBuffer, address1, address2) {
     try {
+
+      function sanitizeText(text) {
+  if (!text) return "";
+  return text
+    .replace(/[\0-\x1F\x7F]/g, '')       // remove control chars
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;')
+    .replace(/தமிநா அர/g, '')           // remove unwanted Tamil word
+    .trim();
+}
       // Same resolution as processFileAsync
       const widthOut = 1300, heightOut = 816;
       const svgText = `
@@ -224,8 +251,8 @@ return { success: false, error: 'Upload Valid File.' };
           </style>
           <text x="32" y="600" class="number">${idNumber}</text>
           <text x="32" y="650" class="label">${name}</text>
-          <text x="32" y="700" class="address">${address1}</text>
-          <text x="32" y="750" class="address">${address2}</text>
+          <text x="32" y="700" class="address">${sanitizeText(address1)}</text>
+          <text x="32" y="750" class="address">${sanitizeText(address2)}</text>
         </svg>
       `;
 
@@ -277,3 +304,6 @@ return { success: false, error: 'Upload Valid File.' };
 }
 
 module.exports = FileService;
+
+
+
