@@ -88,19 +88,20 @@ class AuthService {
       const { name, email, company_name, mobile,address } = userData;
       
       // Check if user already exists
-      const existingUsers = await this.db.query('SELECT id FROM register WHERE email = ?', [email]);
+      const existingUsers = await this.db.query('SELECT id FROM registration WHERE email = ?', [email]);
       if (existingUsers.length > 0) {
         throw new Error('Given email already exists');
       }
 
       
       const result = await this.db.run(`
-        INSERT INTO users (name, email, company_name, mobile,address) 
-        VALUES (?, ?, ?, ?)
-      `, [name, email, company_name, mobile,address]);
+        INSERT INTO registration (name, email, company_name, mobile,address) 
+        VALUES (?, ?, ?, ?,?)
+      `, [name, email, company_name, mobile, address]);
 
       return {
         success: true,
+        message: 'Registration successful',
         userId: result.id
       };
     } catch (error) {

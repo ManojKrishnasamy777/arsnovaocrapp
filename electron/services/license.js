@@ -86,17 +86,23 @@ async getHddSerial() {
 
     // 1. Get user email from registered table
     const user = await this.db.getRegisteredUserById(registered_id); 
+    
     // implement getRegisteredUserById in your Database class
     if (!user) throw new Error('Registered user not found');
 
     const email = user.email;
 
     // 2. Concatenate string
-    const data = `${hddSerial}${this.apiSecret}${email}Activate`;
-
+    const data = `${hddSerial}${this.apiSecret}${registered_id}Activate`;
+console.log('Data for HMC generation:', data);
     // 3. Create HMC key using SHA256
-    const hmcKey = crypto.createHash('sha256').update(data).digest('hex');
-
+const hmcKey = crypto
+  .createHmac('sha256', this.apiSecret)
+  .update(data)
+  .digest('base64')
+  .replace(/\+/g, '-')
+  .replace(/\//g, '_')
+  .replace(/=+$/, '');
     return hmcKey;
   }
 }

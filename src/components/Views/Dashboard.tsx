@@ -12,16 +12,8 @@ const Dashboard: React.FC = () => {
   const [recentFiles, setRecentFiles] = useState<FileRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [serial, setSerial] = useState('Loading...');
 
-  useEffect(() => {
-    async function fetchSerial() {
-      debugger;
-      const s = await window.electronAPI.getHddSerial();
-      setSerial(s || 'Not available');
-    }
-    fetchSerial();
-  }, []);
+
 
   useEffect(() => {
     loadDashboardData();
@@ -89,7 +81,6 @@ const Dashboard: React.FC = () => {
   return (
     <div className="p-6 space-y-6">
       {/* Stats Cards */}
-      <h1>{serial}</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
           <div className="flex items-center justify-between">

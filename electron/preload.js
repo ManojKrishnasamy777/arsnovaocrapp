@@ -3,7 +3,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('electronAPI', {
   // Auth methods
   login: (credentials) => ipcRenderer.invoke('auth:login', credentials),
-  register: (userData) => ipcRenderer.invoke('auth:register', userData),
+  registerLicense: (userData) => ipcRenderer.invoke('auth:register', userData),
   verifyToken: (token) => ipcRenderer.invoke('auth:verify-token', token),
   
   // User methods

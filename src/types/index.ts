@@ -39,7 +39,7 @@ declare global {
     electronAPI: {
       // Auth methods
       login: (credentials: { email: string; password: string }) => Promise<any>;
-      register: (userData: any) => Promise<any>;
+      registerLicense: (userData: any) => Promise<any>;
       verifyToken: (token: string) => Promise<any>;
 
       // User methods
