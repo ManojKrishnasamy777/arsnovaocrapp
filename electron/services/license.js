@@ -2,7 +2,7 @@
 const { exec } = require('child_process');
 const os = require('os');
 const crypto = require('crypto'); // for HMC hash
-const Database = require('./database'); // adjust path to your Database class
+const Database = require('../database'); 
 
 function execPromise(command) {
   return new Promise((resolve, reject) => {
@@ -16,52 +16,64 @@ function execPromise(command) {
 class LicenseService {
   constructor() {
     this.db = new Database(); // your sqlite DB wrapper
-    this.apiSecret = 'YOUR_SECRET_KEY'; // replace with your real secret
+    this.apiSecret = 'a8f5f167f44f4964e6c998dee827110c'; 
   }
 
-  async getHddSerial() {
-    const platform = os.platform();
-    try {
-      if (platform === 'win32') {
-        const out = await execPromise('wmic diskdrive get SerialNumber /value');
-        let m = out.match(/SerialNumber\s*=\s*(\S+)/i);
-        if (m && m[1]) return m[1].trim();
+async getHddSerial() {
+  const platform = os.platform();
+  try {
+    let serial = null;
+
+    if (platform === 'win32') {
+      const out = await execPromise('wmic diskdrive get SerialNumber /value');
+      let m = out.match(/SerialNumber\s*=\s*(\S+)/i);
+      if (m && m[1]) serial = m[1].trim();
+      if (!serial) {
         const lines = out.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
         for (const ln of lines) {
-          if (/^[0-9A-Za-z\-_.]+$/.test(ln) && ln.length > 3) return ln;
+          if (/^[0-9A-Za-z\-_.]+$/.test(ln) && ln.length > 3) {
+            serial = ln;
+            break;
+          }
         }
-        return null;
       }
-
-      if (platform === 'linux') {
-        try {
-          const mountInfo = await execPromise(`findmnt -n -o SOURCE / 2>/dev/null || echo "/dev/sda"`);
-          const rootDev = (mountInfo || '/dev/sda').trim().split(/\s+/)[0];
-          const ls = await execPromise(`lsblk -dn -o SERIAL ${rootDev} 2>/dev/null`);
-          if (ls && ls.trim()) return ls.trim();
-          const u = await execPromise(`udevadm info --query=property --name=${rootDev} 2>/dev/null | grep -E '^ID_SERIAL=' || true`);
-          const mu = (u || '').match(/^ID_SERIAL=(.+)$/m);
-          if (mu && mu[1]) return mu[1].trim();
-        } catch (e) {}
-        return null;
-      }
-
-      if (platform === 'darwin') {
-        try {
-          const sp = await execPromise(`system_profiler SPStorageDataType 2>/dev/null || system_profiler SPSerialATADataType 2>/dev/null`);
-          let m = sp.match(/Serial Number:\s*(\S+)/i);
-          if (m && m[1]) return m[1].trim();
-          const uuidOut = await execPromise(`ioreg -rd1 -c IOPlatformExpertDevice | awk -F\\" '/IOPlatformUUID/ { print $(NF-1) }' 2>/dev/null || echo ""`);
-          if (uuidOut && uuidOut.trim()) return `UUID:${uuidOut.trim()}`;
-        } catch (e) {}
-        return null;
-      }
-
-      return null;
-    } catch (err) {
-      return null;
     }
+
+    if (platform === 'linux') {
+      try {
+        const mountInfo = await execPromise(`findmnt -n -o SOURCE / 2>/dev/null || echo "/dev/sda"`);
+        const rootDev = (mountInfo || '/dev/sda').trim().split(/\s+/)[0];
+        const ls = await execPromise(`lsblk -dn -o SERIAL ${rootDev} 2>/dev/null`);
+        if (ls && ls.trim()) serial = ls.trim();
+        const u = await execPromise(`udevadm info --query=property --name=${rootDev} 2>/dev/null | grep -E '^ID_SERIAL=' || true`);
+        const mu = (u || '').match(/^ID_SERIAL=(.+)$/m);
+        if (mu && mu[1]) serial = mu[1].trim();
+      } catch (e) {}
+    }
+
+    if (platform === 'darwin') {
+      try {
+        const sp = await execPromise(`system_profiler SPStorageDataType 2>/dev/null || system_profiler SPSerialATADataType 2>/dev/null`);
+        let m = sp.match(/Serial Number:\s*(\S+)/i);
+        if (m && m[1]) serial = m[1].trim();
+        if (!serial) {
+          const uuidOut = await execPromise(`ioreg -rd1 -c IOPlatformExpertDevice | awk -F\\" '/IOPlatformUUID/ { print $(NF-1) }' 2>/dev/null || echo ""`);
+          if (uuidOut && uuidOut.trim()) serial = `UUID:${uuidOut.trim()}`;
+        }
+      } catch (e) {}
+    }
+
+    if (serial) {
+      // remove _ and .
+      serial = serial.replace(/[_\.]/g, '');
+    }
+
+    return serial || null;
+  } catch (err) {
+    return null;
   }
+}
+
 
   /**
    * Generate HMC key
