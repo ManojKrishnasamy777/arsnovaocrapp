@@ -27,6 +27,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // License methods
     getHddSerial: () => ipcRenderer.invoke('get-hdd-serial'),
+    generateHmc: ({ registered_id, hddSerial }) =>
+    ipcRenderer.invoke('generate-hmc', { registered_id, hddSerial }),
 
 
   printPdf: (pdfPath) => ipcRenderer.invoke('print-pdf', pdfPath),

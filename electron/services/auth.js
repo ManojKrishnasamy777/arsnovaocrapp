@@ -126,6 +126,8 @@ class AuthService {
     }
   }
 
+  
+
   async getAllUsers() {
     try {
       const users = await this.db.query(`

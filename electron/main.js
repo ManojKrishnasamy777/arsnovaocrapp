@@ -138,6 +138,10 @@ ipcMain.handle('get-hdd-serial', async () => {
   return await licenseService.getHddSerial();
 });
 
+ipcMain.handle('generate-hmc', async (event, { registered_id, hddSerial }) => {
+  return await licenseService.generateHmcKey(registered_id, hddSerial);
+});
+
 // ---------------------------
 // Dialog handler
 // ---------------------------

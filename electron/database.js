@@ -24,6 +24,15 @@ class Database {
     });
   }
 
+async getRegisteredUserById(registered_id) {
+  const row = await this.db.get(
+    'SELECT * FROM registered WHERE id = ?',
+    [registered_id]
+  );
+  return row; // { id, email, ... }
+}
+
+
   initTables() {
     this.db.serialize(() => {
       // Enable foreign key constraints

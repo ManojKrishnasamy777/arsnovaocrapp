@@ -69,6 +69,8 @@ declare global {
       }) => Promise<void>;
 
       getHddSerial: () => Promise<string | null>;
+      generateHmc: (data: { registered_id: number; hddSerial: string }) => Promise<string>;
+
 
       printPdf: (pdfPath: string) => Promise<any>;
 
