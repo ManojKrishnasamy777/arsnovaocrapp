@@ -77,8 +77,8 @@ const Registration: React.FC = () => {
             <div className="grid grid-cols-2 gap-6">
               {/* Name */}
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                  Name
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2 ">
+                  Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -94,7 +94,7 @@ const Registration: React.FC = () => {
               {/* Company Name */}
               <div>
                 <label htmlFor="company_name" className="block text-sm font-medium text-gray-700 mb-2">
-                  Company Name
+                  Company Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -110,7 +110,7 @@ const Registration: React.FC = () => {
               {/* Email */}
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                  Email
+                  Email <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="email"
@@ -126,7 +126,7 @@ const Registration: React.FC = () => {
               {/* Mobile No */}
               <div>
                 <label htmlFor="mobile" className="block text-sm font-medium text-gray-700 mb-2">
-                  Mobile No
+                  Mobile No <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -142,7 +142,7 @@ const Registration: React.FC = () => {
               {/* Address (Full width row) */}
               <div className="col-span-2">
                 <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
-                  Address
+                  Address 
                 </label>
                 <textarea
                   name="address"
