@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoginForm from './components/Auth/LoginForm';
 import Sidebar from './components/Layout/Sidebar';
@@ -9,6 +9,8 @@ import FileList from './components/Views/FileList';
 import UserManagement from './components/Views/UserManagement';
 import RoleManagement from './components/Views/RoleManagement';
 import Footer from './components/Layout/Footer';
+import Activation from './components/Views/Activation';
+import Registration from './components/Views/Registration';
 
 const AppContent: React.FC = () => {
   const { isAuthenticated, loading } = useAuth();
@@ -23,7 +25,7 @@ const AppContent: React.FC = () => {
   }
 
   if (!isAuthenticated) {
-    return <LoginForm />;
+    return <Registration />;
   }
 
   const getViewTitle = (view: string) => {
