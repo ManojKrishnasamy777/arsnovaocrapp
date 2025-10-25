@@ -1,55 +1,34 @@
-// ---------------------------
-// main.js
-// ---------------------------
-
-// Required modules
+// electron/main.js
+const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const path = require('path');
 const os = require('os');
 const fs = require('fs');
-const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 
 // ---------------------------
-// CROSS-PLATFORM USERDATA & CACHE FIX
+// USERDATA / CACHE FIX
 // ---------------------------
-
-// Determine a safe writable userData path
 let userDataPath;
 if (process.platform === 'win32') {
-  // Windows: %APPDATA%\do365_tech
   userDataPath = path.join(os.homedir(), 'AppData', 'Roaming', 'do365_tech_app');
 } else {
-  // Linux/macOS: ~/.config/do365_tech
   userDataPath = path.join(os.homedir(), '.config', 'do365_tech_app');
 }
-
-// Ensure the folder exists
 if (!fs.existsSync(userDataPath)) fs.mkdirSync(userDataPath, { recursive: true });
-
-// Force Electron to use this writable folder
 app.setPath('userData', userDataPath);
 
-// ---------------------------
-// CACHE & GPU FIXES
-// ---------------------------
-
-// Create a robust writable cache path
-const cachePath = path.join(os.tmpdir(), 'do365_tech_cache'); // use tmpdir to avoid permission issues
+const cachePath = path.join(os.tmpdir(), 'do365_tech_cache');
 if (!fs.existsSync(cachePath)) fs.mkdirSync(cachePath, { recursive: true });
-
-// Command-line switches to avoid GPU/cache errors
 app.commandLine.appendSwitch('disk-cache-dir', cachePath);
-app.commandLine.appendSwitch('disable-gpu');
-app.commandLine.appendSwitch('disable-gpu-compositing');
 app.commandLine.appendSwitch('disable-gpu-shader-disk-cache');
 
 // ---------------------------
-// DEV MODE
+// ENV MODE
 // ---------------------------
 const isDev = process.env.NODE_ENV === 'development';
 let mainWindow;
 
 // ---------------------------
-// CREATE MAIN WINDOW
+// CREATE WINDOW
 // ---------------------------
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -57,48 +36,43 @@ function createWindow() {
     height: 800,
     minWidth: 1000,
     minHeight: 600,
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js'),
-    },
-    titleBarStyle: 'customButtonsOnHover',
     show: false,
-    autoHideMenuBar: false,
+    autoHideMenuBar: true,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
   });
 
   if (isDev) {
     mainWindow.loadURL('http://localhost:5173');
     mainWindow.webContents.openDevTools();
   } else {
-    mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
-        mainWindow.webContents.openDevTools();
-        console.log(__dirname);
+    // production mode → point to built Vite files in ../dist
+        mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
+
+    mainWindow.webContents.openDevTools(); // optional
   }
 
-  mainWindow.once('ready-to-show', () => mainWindow.show());
-  mainWindow.setMenu(null);
 
-  mainWindow.on('closed', () => {
-    mainWindow = null;
-  });
+  mainWindow.once('ready-to-show', () => mainWindow.show());
+  mainWindow.on('closed', () => (mainWindow = null));
 }
 
 // ---------------------------
 // APP LIFECYCLE
 // ---------------------------
 app.whenReady().then(createWindow);
-
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
-
 app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) createWindow();
 });
 
 // ---------------------------
-// DATABASE & SERVICES
+// IMPORT SERVICES
 // ---------------------------
 const Database = require('./database');
 const AuthService = require('./services/auth');
