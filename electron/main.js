@@ -73,6 +73,7 @@ function createWindow() {
   } else {
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
         mainWindow.webContents.openDevTools();
+        console.log(__dirname);
   }
 
   mainWindow.once('ready-to-show', () => mainWindow.show());

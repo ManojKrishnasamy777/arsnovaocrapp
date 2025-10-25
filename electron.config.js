@@ -9,14 +9,14 @@ module.exports = {
 
   directories: {
     output: 'dist-app',
-    buildResources: 'assets',
+    buildResources: 'assets', // icons & extra resources
   },
 
   files: [
-    'dist/**/*',
-    'electron/**/*',
+    'dist/**/*',           // Vite build output
+    'electron/**/*',       // Electron main & preload scripts
     'package.json',
-    'public/**/*',
+    'public/**/*',         // Include public folder and all assets
     'node_modules/**/!(concurrently|vite|eslint|typescript|tailwindcss)',
   ],
 
@@ -50,6 +50,7 @@ module.exports = {
     category: 'Utility',
   },
 
+  // Icons must exist: icon.ico (win), icon.icns (mac), icon.png (linux)
   icon: path.join(__dirname, 'assets', 'icon'),
 
   publish: [],
