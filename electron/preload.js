@@ -5,6 +5,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   login: (credentials) => ipcRenderer.invoke('auth:login', credentials),
   registerLicense: (userData) => ipcRenderer.invoke('auth:register', userData),
   verifyToken: (token) => ipcRenderer.invoke('auth:verify-token', token),
+  isRegistered: () => ipcRenderer.invoke('auth:isRegistered'),
+  isLicensed: () => ipcRenderer.invoke('auth:isLicensed'),
+
   
   // User methods
   getAllUsers: () => ipcRenderer.invoke('users:getAll'),
@@ -29,6 +32,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getHddSerial: () => ipcRenderer.invoke('get-hdd-serial'),
     generateHmc: ({ registered_id, hddSerial }) =>
     ipcRenderer.invoke('generate-hmc', { registered_id, hddSerial }),
+      insertlicense: (userData) => ipcRenderer.invoke('insertlicense', userData),
 
 
   printPdf: (pdfPath) => ipcRenderer.invoke('print-pdf', pdfPath),

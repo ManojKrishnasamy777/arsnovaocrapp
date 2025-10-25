@@ -79,6 +79,27 @@ ipcMain.handle('auth:verify-token', (event, token) =>
   authService.verifyToken(token)
 );
 
+ipcMain.handle('auth:isRegistered', async () => {
+  try {
+    const result = await authService.isRegistered();
+    return result; // must return
+  } catch (err) {
+    console.error('Error in auth:isRegistered:', err);
+    return { registered: false, total: 0, success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('auth:isLicensed', async () => {
+  try {
+    const result = await authService.isLicensed();
+    return result; // must return
+  } catch (err) {
+    console.error('Error in auth:isRegistered:', err);
+    return { registered: false, total: 0, success: false, error: err.message };
+  }
+});
+
+
 // ---------------------------
 // User handlers
 // ---------------------------
@@ -137,6 +158,10 @@ ipcMain.handle('print-pdf', async (event, pdfPath) => {
 ipcMain.handle('get-hdd-serial', async () => {
   return await licenseService.getHddSerial();
 });
+
+ipcMain.handle('insertlicense', (event, userData) =>
+  licenseService.InsertLicense(userData)
+);
 
 ipcMain.handle('generate-hmc', async (event, { registered_id, hddSerial }) => {
   return await licenseService.generateHmcKey(registered_id, hddSerial);

@@ -2,10 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import logoPath from '/assets/web-logo.png';
+import { useLocation ,Navigate} from 'react-router-dom';
 
 
+interface ActivationProps {
+  id?: string; 
+}
 
-const Activation: React.FC = () => {
+const Activation: React.FC = ({ id}) => {
+  debugger
   const [formData, setFormData] = useState({
     system_code: '',
     license_key: ''
@@ -14,20 +19,46 @@ const Activation: React.FC = () => {
   const [error, setError] = useState('');
 
   const { login } = useAuth();
+  const location = useLocation();
+  const routeState = location.state as { id?: string } | null;
+const finalId = id || routeState?.id || ''; 
 
   const handleSubmit = async (e: React.FormEvent) => {
+    debugger
     e.preventDefault();
     setLoading(true);
     setError('');
+    let SaveData : any = {};
+    SaveData['license_key'] = formData.license_key;
+        SaveData['system_code'] = formData.system_code;
+    SaveData['registered_id'] = finalId;
+    const res = await window.electronAPI.insertlicense(SaveData);
 
-    const success = await login(formData.system_code, formData.license_key);
-
-    if (!success) {
+    if (!res.success) {
       setError('Invalid system_code or license_key');
+    }
+    else{
+alert(res.message);
+<Navigate to="/login" replace />
     }
 
     setLoading(false);
   };
+
+    useEffect(() => {
+      debugger
+        const fetchSerial = async () => {
+    const serial = await window.electronAPI.getHddSerial();
+    if(serial){
+ setFormData(prev => ({
+    ...prev,          
+    system_code: serial 
+  }));   
+ }
+        }
+         fetchSerial();
+    },[]);
+  
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -50,7 +81,7 @@ const Activation: React.FC = () => {
     </div>
 
     {/* Content/Form — grow to fill available space */}
-    <div className="flex-grow">
+    <div className="flex-grystem_codeow">
       {error && (
         <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
           <p className="text-red-600 text-sm">{error}</p>
@@ -96,9 +127,8 @@ const Activation: React.FC = () => {
           >
             Cancel
           </button>
-          <button
+          <button             type="submit"
             className="w-1/2 bg-[#3B4A99] text-white py-3 px-4 rounded-lg font-medium hover:bg-[#2D3A7F] transition-colors"
-            type="button"
           >
             Activate
           </button>

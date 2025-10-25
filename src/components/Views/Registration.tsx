@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import logoPath from '/assets/web-logo.png';
+import { useNavigate } from 'react-router-dom';
 
 
 
 const Registration: React.FC = () => {
+    const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     name: '',
     company_name: '',
@@ -49,11 +52,14 @@ const response = await fetch('https://cmchis.do365tech.in/api/RegistrationInsert
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify(formData),
 });
-
-
     const result = await response.json();
+    debugger
     if (result.Type == 'S') {
       alert('Registration successful!');
+    let res =   await window.electronAPI.registerLicense(formData);
+    if(res){
+
+    }
    setFormData({
      name: '',
     company_name: '',

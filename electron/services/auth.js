@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { FrameIcon } = require('lucide-react');
 
 class AuthService {
   constructor(database) {
@@ -111,6 +112,53 @@ class AuthService {
       };
     }
   }
+
+  async isRegistered() {
+  try {
+    const rows = await this.db.query('SELECT COUNT(*) as count FROM registration');
+    const data = await this.db.query('SELECT * FROM registration');
+    const count = rows[0]?.count || 0;
+
+    return {
+      registered: count > 0,
+      total: count,
+      success: true,
+      data_id:count != 0 ? data[0].id : null
+    };
+  } catch (error) {
+    console.error('Check registration error:', error);
+    return {
+      registered: false,
+      total: 0,
+      error: error.message,
+      success: false
+    };
+  }
+}
+
+async isLicensed() {
+  try {
+    const rows = await this.db.query('SELECT COUNT(*) as count FROM license');
+    const count = rows[0]?.count || 0;
+
+    return {
+      licensed: count > 0,
+      total: count,
+      success: true,
+    };
+  } catch (error) {
+    console.error('Check registration error:', error);
+    return {
+      licensed: false,
+      total: 0,
+      error: error.message,
+      success: false
+    };
+  }
+}
+
+
+
 
   async verifyToken(token) {
     try {

@@ -1,20 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+
 import LoginForm from './components/Auth/LoginForm';
+import Registration from './components/Views/Registration';
+import Activation from './components/Views/Activation';
+
 import Sidebar from './components/Layout/Sidebar';
 import Header from './components/Layout/Header';
+import Footer from './components/Layout/Footer';
 import Dashboard from './components/Views/Dashboard';
 import FileUpload from './components/Views/FileUpload';
 import FileList from './components/Views/FileList';
 import UserManagement from './components/Views/UserManagement';
 import RoleManagement from './components/Views/RoleManagement';
-import Footer from './components/Layout/Footer';
-import Activation from './components/Views/Activation';
-import Registration from './components/Views/Registration';
 
-const AppContent: React.FC = () => {
-  const { isAuthenticated, loading } = useAuth();
-  const [activeView, setActiveView] = useState('upload');
+
+// ✅ Protected layout (only for logged-in users)
+const ProtectedLayout: React.FC = () => {
+  const { isAuthenticated,isLicensed,isRegistered,data_id, loading } = useAuth();
+  const [activeView, setActiveView] = React.useState('upload');
 
   if (loading) {
     return (
@@ -23,10 +28,29 @@ const AppContent: React.FC = () => {
       </div>
     );
   }
-
-  if (!isAuthenticated) {
-    return <Registration />;
+if(isRegistered){
+  debugger
+if(isLicensed){
+if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
   }
+}
+else{
+return (
+  <Navigate
+    to="/activation"
+    replace
+    state={{ id: data_id }} // ✅ data goes here
+  />
+);
+
+}
+}
+else{
+     return <Navigate to="/registration" replace />;
+}
+
+  
 
   const getViewTitle = (view: string) => {
     const titles: Record<string, string> = {
@@ -61,28 +85,37 @@ const AppContent: React.FC = () => {
       {/* Sidebar */}
       <Sidebar activeView={activeView} onViewChange={setActiveView} />
 
-      {/* Main content area */}
+      {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
         <Header title={getViewTitle(activeView)} />
-
-        {/* Scrollable main content */}
-        <main className="flex-1 overflow-y-auto p-4">
-          {renderView()}
-        </main>
-
-        {/* Sticky footer */}
+        <main className="flex-1 overflow-y-auto p-4">{renderView()}</main>
         <Footer />
       </div>
     </div>
   );
 };
 
+// ✅ Route-based App
 const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <Router>
+      <AuthProvider>
+        <Routes>
+          {/* Public routes */}
+          <Route path="/login" element={<LoginForm />} />
+          <Route path="/registration" element={<Registration />} />
+<Route
+  path="/activation"
+  element={<Activation id="1" />}
+/>
+          {/* Protected routes */}
+          <Route path="/*" element={<ProtectedLayout />} />
+
+          {/* Default redirect */}
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </AuthProvider>
+    </Router>
   );
 };
 

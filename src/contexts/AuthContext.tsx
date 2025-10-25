@@ -22,25 +22,67 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     user: null,
     token: null,
     isAuthenticated: false,
+    isLicensed: false,
+    isRegistered:false,
+    data_id : 0
   });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Check for stored token on app start
     const checkStoredAuth = async () => {
+      debugger
+                          const Registrationresult = await window.electronAPI.isRegistered();
+                          const Licensedresult = await window.electronAPI.isLicensed();
+
       const storedToken = localStorage.getItem('token');
-      if (storedToken) {
+      if (storedToken || Registrationresult.registered || Licensedresult.licensed) {
         try {
-          const result = await window.electronAPI.verifyToken(storedToken);
-          if (result.success) {
+          debugger
+                    // const Registrationresult = await window.electronAPI.isRegistered();
+                    if(Registrationresult.success ){
+
+                    
+          // const result = await window.electronAPI.verifyToken(storedToken);
+          // if (Registrationresult.success && result.success) {
+                    if (Registrationresult.success && !Licensedresult.licensed) {
             setAuthState({
+              user: null,
+              token: null,
+              isAuthenticated: false,
+                  isLicensed: false,
+                  isRegistered: true,
+                  data_id: Registrationresult.data_id
+            });
+          } else if(Licensedresult.success && !storedToken){
+ setAuthState({
+              user: null,
+              token: null,
+              isAuthenticated: false,
+                  isLicensed: true,
+                  isRegistered: true,
+                  data_id: Registrationresult.data_id
+            });
+          }
+          else if(storedToken && Registrationresult.registered && Licensedresult.licensed){
+                      const result = await window.electronAPI.verifyToken(storedToken);
+                                if (result.success) {
+setAuthState({
               user: result.user,
               token: storedToken,
               isAuthenticated: true,
+                  isLicensed: true,
+                  isRegistered: true,
+                  data_id: Registrationresult.data_id
             });
-          } else {
+          }
+          }
+          else {
             localStorage.removeItem('token');
           }
+        }
+
+
         } catch (error) {
           localStorage.removeItem('token');
         }
@@ -52,6 +94,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
+    debugger
     try {
       const result = await window.electronAPI.login({ email, password });
 
@@ -61,6 +104,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           user: result.user,
           token: result.token,
           isAuthenticated: true,
+              isLicensed: true,
+              isRegistered: true,
+              data_id: 0
         });
         return true;
       }
@@ -77,6 +123,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       user: null,
       token: null,
       isAuthenticated: false,
+          isLicensed: true,
+          isRegistered:true,
+          data_id: 0
     });
   };
 

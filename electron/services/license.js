@@ -105,6 +105,35 @@ const hmcKey = crypto
   .replace(/=+$/, '');
     return hmcKey;
   }
+
+  async InsertLicense(userData) {
+    try {
+      const { system_code, license_key, registered_id } = userData;
+      
+      // Check if user already exists
+      const existingUsers = await this.db.query('SELECT license_key FROM license WHERE license_key = ?', [license_key]);
+      if (existingUsers.length > 0) {
+        throw new Error('Given email already exists');
+      }
+
+      
+      const result = await this.db.run(`
+        INSERT INTO license (system_code, license_key, registered_id ) 
+        VALUES (?, ?, ?)
+      `, [system_code, license_key, registered_id ]);
+
+      return {
+        success: true,
+        message: 'Activated successful',
+        Id: result.id
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
 }
 
 module.exports = LicenseService;

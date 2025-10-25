@@ -32,6 +32,9 @@ export interface AuthState {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
+  isLicensed: boolean;
+    isRegistered: boolean;
+    data_id : number
 }
 
 declare global {
@@ -41,6 +44,8 @@ declare global {
       login: (credentials: { email: string; password: string }) => Promise<any>;
       registerLicense: (userData: any) => Promise<any>;
       verifyToken: (token: string) => Promise<any>;
+      isRegistered: () => Promise<any>;
+      isLicensed: () => Promise<any>;
 
       // User methods
       getAllUsers: () => Promise<any>;
@@ -70,6 +75,7 @@ declare global {
 
       getHddSerial: () => Promise<string | null>;
       generateHmc: (data: { registered_id: number; hddSerial: string }) => Promise<string>;
+      insertlicense: (userData: any) => Promise<any>;
 
 
       printPdf: (pdfPath: string) => Promise<any>;
