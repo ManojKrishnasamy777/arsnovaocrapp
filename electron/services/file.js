@@ -110,7 +110,7 @@ class FileService {
       // 5️⃣ Extract text from PDF
       const parsed = await pdfParse(pdfBytes.buffer);
       const text = parsed.text;
-      debugger
+      
       const filevalid = "(PMJAY-CMCHIS"
       console.log('Extracted Text:', text);
  if(!text.includes(filevalid)){

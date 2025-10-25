@@ -11,46 +11,86 @@ const Registration: React.FC = () => {
     company_name: '',
     email: '',
     mobile: '',
-    address: ''
+    address: '',
+    activation_code:'',
+    created_by_id: "b5cec1c6-8783-4e60-b88b-d49d8ae658a7"
   });
+
+  useEffect(() => {
+  const fetchSerial = async () => {
+    const serial = await window.electronAPI.getHddSerial();
+
+    // ✅ Update the activation_key field in state
+    setFormData((prevData) => ({
+      ...prevData,
+      activation_code: serial || '' // Fallback if serial is null
+    }));
+  };
+
+  fetchSerial();
+}, []); 
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   //   const { login } = useAuth();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
 
-    try {
-      debugger;
-      const result = await window.electronAPI.registerLicense(formData);
-      if (result.success) {
-        alert('Registration successful!');
-        if (result.userId) {
-          const serial = await window.electronAPI.getHddSerial();
-          let data: any = { registered_id: formData.email, hddSerial: serial };
-          const hmc = await window.electronAPI.generateHmc(data);
-          alert(hmc || 'Delete failed');
+const handleSubmit = async (e: React.FormEvent) => {
+    
+  e.preventDefault();
+  setLoading(true);
+  setError('');
 
-        }
-      } else {
-        alert(result.error || 'Delete failed');
-      }
-    } catch (error) {
-      console.error('Error deleting user:', error);
-      alert('An error occurred');
+  try {
+     
+const response = await fetch('https://cmchis.do365tech.in/api/RegistrationInsert', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(formData),
+});
+
+
+    const result = await response.json();
+    if (result.Type == 'S') {
+      alert('Registration successful!');
+   setFormData({
+     name: '',
+    company_name: '',
+    email: '',
+    mobile: '',
+    address: '',
+    activation_code: '',
+    created_by_id: ""
+  });
+
+    } else {
+      alert(result.error || 'Registration failed');
     }
-    setLoading(false);
-  };
+  } 
+  catch (error) {
+    console.error('Error during registration:', error);
+    alert(`An error occurred`);
+  }
+  setLoading(false);
+};
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
+
+const handleChange = (
+  e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+) => {
+  const { name, value } = e.target;
+  setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // Allow only numbers for mobile field
+  if (name === "mobile") {
+    const numericValue = value.replace(/[^0-9]/g, ""); // removes non-numeric
+    setFormData({ ...formData, [name]: numericValue });
+  } else {
+    setFormData({ ...formData, [name]: value });
+  }
+
+};
 
   return (
     <div className="min-h-screen bg-[#2D3A7F] flex items-center justify-center p-4">
@@ -146,8 +186,8 @@ const Registration: React.FC = () => {
                 </label>
                 <textarea
                   name="address"
-                  value={formData.address}
-
+                  onChange={handleChange}
+                    value={formData.address}
                   placeholder="Enter your Address"
                   rows={4}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors resize-none"
