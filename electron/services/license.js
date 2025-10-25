@@ -83,14 +83,8 @@ async getHddSerial() {
    */
   async generateHmcKey(registered_id, hddSerial) {
     if (!registered_id || !hddSerial) throw new Error('Missing parameters');
-
-    // 1. Get user email from registered table
-    const user = await this.db.getRegisteredUserById(registered_id); 
-    
-    // implement getRegisteredUserById in your Database class
-    if (!user) throw new Error('Registered user not found');
-
-    const email = user.email;
+   
+console.log('Data for HMC generation:', hddSerial);
 
     // 2. Concatenate string
     const data = `${hddSerial}${this.apiSecret}${registered_id}Activate`;

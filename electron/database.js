@@ -25,12 +25,13 @@ class Database {
   }
 
   async getRegisteredUserById(registered_id) {
-  const row = await this.db.get(
-    'SELECT * FROM registration WHERE id = ?',
-    [registered_id]
-  );
-  return row; // { id, email, ... }
+    registered_id = 23;
+  console.log('Getting user by ID:', registered_id);
+  const row = await this.db.get('SELECT * FROM registration WHERE id = ?', [registered_id]);
+  console.log('DB returned row:', row);
+  return row; // ✅ Must return this
 }
+
 
   initTables() {
     this.db.serialize(() => {

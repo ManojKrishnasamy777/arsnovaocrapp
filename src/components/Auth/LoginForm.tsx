@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import logoPath from '/assets/web-logo.png';
+import { useNavigate } from 'react-router-dom';
 const LoginForm: React.FC = () => {
   const [formData, setFormData] = useState({
     name: 'CMCHIS',
@@ -12,7 +13,7 @@ const LoginForm: React.FC = () => {
   const [error, setError] = useState('');
 
   const { login } = useAuth();
-
+  const navigate = useNavigate();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -23,6 +24,10 @@ const LoginForm: React.FC = () => {
     if (!success) {
       setError('Invalid name or password');
     }
+    else {
+      navigate("/upload", { replace: true });
+    }
+
 
     setLoading(false);
   };

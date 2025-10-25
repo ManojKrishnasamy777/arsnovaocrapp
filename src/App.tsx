@@ -18,7 +18,7 @@ import RoleManagement from './components/Views/RoleManagement';
 
 // ✅ Protected layout (only for logged-in users)
 const ProtectedLayout: React.FC = () => {
-  const { isAuthenticated,isLicensed,isRegistered,data_id, loading } = useAuth();
+  const { isAuthenticated, isLicensed, isRegistered, data_id, loading } = useAuth();
   const [activeView, setActiveView] = React.useState('upload');
 
   if (loading) {
@@ -28,31 +28,13 @@ const ProtectedLayout: React.FC = () => {
       </div>
     );
   }
-if(isRegistered){
-  debugger
-if(isLicensed){
-if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-}
-else{
-return (
-  <Navigate
-    to="/activation"
-    replace
-    state={{ id: data_id }} // ✅ data goes here
-  />
-);
+  if (!isRegistered) return <Navigate to="/registration" replace />;
+  if (!isLicensed) return <Navigate to="/activation" replace state={{ id: data_id }} />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
 
-}
-}
-else{
-     return <Navigate to="/registration" replace />;
-}
-
-  
 
   const getViewTitle = (view: string) => {
+    ;
     const titles: Record<string, string> = {
       dashboard: 'Dashboard',
       upload: 'Upload PDF',
@@ -64,6 +46,8 @@ else{
   };
 
   const renderView = () => {
+    ;
+
     switch (activeView) {
       case 'dashboard':
         return <Dashboard />;
@@ -104,10 +88,10 @@ const App: React.FC = () => {
           {/* Public routes */}
           <Route path="/login" element={<LoginForm />} />
           <Route path="/registration" element={<Registration />} />
-<Route
-  path="/activation"
-  element={<Activation id="1" />}
-/>
+          <Route
+            path="/activation"
+            element={<Activation id="1" />}
+          />
           {/* Protected routes */}
           <Route path="/*" element={<ProtectedLayout />} />
 

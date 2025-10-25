@@ -14,6 +14,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   createUser: (userData) => ipcRenderer.invoke('users:create', userData),
   updateUser: (id, userData) => ipcRenderer.invoke('users:update', { id, userData }),
   deleteUser: (id) => ipcRenderer.invoke('users:delete', id),
+  getRegistrationById: (id) => ipcRenderer.invoke('getRegistrationById:getRegistrationById', id),
   
   // Role methods
   getAllRoles: () => ipcRenderer.invoke('roles:getAll'),

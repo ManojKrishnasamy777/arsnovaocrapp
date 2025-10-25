@@ -33,8 +33,8 @@ export interface AuthState {
   token: string | null;
   isAuthenticated: boolean;
   isLicensed: boolean;
-    isRegistered: boolean;
-    data_id : number
+  isRegistered: boolean;
+  data_id: number
 }
 
 declare global {
@@ -52,6 +52,7 @@ declare global {
       createUser: (userData: any) => Promise<any>;
       updateUser: (id: number, userData: any) => Promise<any>;
       deleteUser: (id: number) => Promise<any>;
+      getRegistrationById: (id: number) => Promise<any>;
 
       // Role methods
       getAllRoles: () => Promise<any>;

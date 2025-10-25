@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import logoPath from '/assets/web-logo.png';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 
 
 
 const Registration: React.FC = () => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -15,23 +15,23 @@ const Registration: React.FC = () => {
     email: '',
     mobile: '',
     address: '',
-    activation_code:'',
+    activation_code: '',
     created_by_id: "b5cec1c6-8783-4e60-b88b-d49d8ae658a7"
   });
 
   useEffect(() => {
-  const fetchSerial = async () => {
-    const serial = await window.electronAPI.getHddSerial();
+    const fetchSerial = async () => {
+      const serial = await window.electronAPI.getHddSerial();
 
-    // ✅ Update the activation_key field in state
-    setFormData((prevData) => ({
-      ...prevData,
-      activation_code: serial || '' // Fallback if serial is null
-    }));
-  };
+      // ✅ Update the activation_key field in state
+      setFormData((prevData) => ({
+        ...prevData,
+        activation_code: serial || '' // Fallback if serial is null
+      }));
+    };
 
-  fetchSerial();
-}, []); 
+    fetchSerial();
+  }, []);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -39,64 +39,85 @@ const Registration: React.FC = () => {
   //   const { login } = useAuth();
 
 
-const handleSubmit = async (e: React.FormEvent) => {
-    
-  e.preventDefault();
-  setLoading(true);
-  setError('');
+  const handleSubmit = async (e: React.FormEvent) => {
 
-  try {
-     
-const response = await fetch('https://cmchis.do365tech.in/api/RegistrationInsert', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(formData),
-});
-    const result = await response.json();
-    debugger
-    if (result.Type == 'S') {
-      alert('Registration successful!');
-    let res =   await window.electronAPI.registerLicense(formData);
-    if(res){
+    e.preventDefault();
+    setLoading(true);
+    setError('');
 
+    try {
+
+      const online = await checkInternetConnection();
+      if (!online) {
+        alert('No internet connection. Please check your network and try again.');
+        setLoading(false);
+        return;
+      }
+      const response = await fetch('https://cmchis.do365tech.in/api/RegistrationInsert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      const result = await response.json();
+      if (result.Type === 'S') {
+        alert('Registration successful!');
+        const res = await window.electronAPI.registerLicense(formData);
+        if (res.success) {
+          navigate("/activation", { state: { id: result.Id }, replace: true });
+        }
+        setFormData({
+          name: '',
+          company_name: '',
+          email: '',
+          mobile: '',
+          address: '',
+          activation_code: '',
+          created_by_id: ""
+        });
+      } else {
+        alert(result.error || 'Registration failed');
+      }
+    } catch (error) {
+      console.error('Error during registration:', error);
+      if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
+        alert('Unable to connect to the server. Please check your internet connection.');
+      } else {
+        alert('An unexpected error occurred. Please try again.');
+      }
     }
-   setFormData({
-     name: '',
-    company_name: '',
-    email: '',
-    mobile: '',
-    address: '',
-    activation_code: '',
-    created_by_id: ""
-  });
 
-    } else {
-      alert(result.error || 'Registration failed');
+    setLoading(false);
+  };
+
+  async function checkInternetConnection(): Promise<boolean> {
+    try {
+      const response = await fetch('https://www.google.com/favicon.ico', {
+        method: 'HEAD',
+        mode: 'no-cors',
+        cache: 'no-cache',
+      });
+      return true; // if fetch succeeds, assume online
+    } catch {
+      return false; // fetch failed => offline or DNS issue
     }
-  } 
-  catch (error) {
-    console.error('Error during registration:', error);
-    alert(`An error occurred`);
   }
-  setLoading(false);
-};
 
 
-const handleChange = (
-  e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-) => {
-  const { name, value } = e.target;
-  setFormData((prev) => ({ ...prev, [name]: value }));
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
 
     // Allow only numbers for mobile field
-  if (name === "mobile") {
-    const numericValue = value.replace(/[^0-9]/g, ""); // removes non-numeric
-    setFormData({ ...formData, [name]: numericValue });
-  } else {
-    setFormData({ ...formData, [name]: value });
-  }
+    if (name === "mobile") {
+      const numericValue = value.replace(/[^0-9]/g, ""); // removes non-numeric
+      setFormData({ ...formData, [name]: numericValue });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
 
-};
+  };
 
   return (
     <div className="min-h-screen bg-[#2D3A7F] flex items-center justify-center p-4">
@@ -188,12 +209,12 @@ const handleChange = (
               {/* Address (Full width row) */}
               <div className="col-span-2">
                 <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
-                  Address 
+                  Address
                 </label>
                 <textarea
                   name="address"
                   onChange={handleChange}
-                    value={formData.address}
+                  value={formData.address}
                   placeholder="Enter your Address"
                   rows={4}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors resize-none"

@@ -243,6 +243,28 @@ async isLicensed() {
     }
   }
 
+  async getRegistrationById(id) {
+  try {
+    const user = await this.db.query('SELECT * FROM registration WHERE id = ?', [id]);
+    if (!user) {
+      return {
+        success: false,
+        message: 'registration not found'
+      };
+    }
+    return {
+      success: true,
+      data: user
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+}
+
+
   async getAllRoles() {
     try {
       const roles = await this.db.query('SELECT * FROM user_roles ORDER BY name');
