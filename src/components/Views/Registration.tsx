@@ -16,6 +16,8 @@ const Registration: React.FC = () => {
     mobile: '',
     address: '',
     activation_code: '',
+    app_name: 'CMCHIS',
+    no_of_records: 0 ,
     created_by_id: "b5cec1c6-8783-4e60-b88b-d49d8ae658a7"
   });
 
@@ -72,6 +74,8 @@ const Registration: React.FC = () => {
           mobile: '',
           address: '',
           activation_code: '',
+          app_name: 'CMCHIS',
+    no_of_records: 0 ,
           created_by_id: ""
         });
       } else {
