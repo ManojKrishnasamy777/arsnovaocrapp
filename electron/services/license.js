@@ -19,56 +19,140 @@ class LicenseService {
     this.apiSecret = 'a8f5f167f44f4964e6c998dee827110c'; 
   }
 
+// async getHddSerial() {
+//   const platform = os.platform();
+//   try {
+//     let serial = null;
+
+//     if (platform === 'win32') {
+//       const out = await execPromise('wmic diskdrive get SerialNumber /value');
+//       let m = out.match(/SerialNumber\s*=\s*(\S+)/i);
+//       if (m && m[1]) serial = m[1].trim();
+//       if (!serial) {
+//         const lines = out.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+//         for (const ln of lines) {
+//           if (/^[0-9A-Za-z\-_.]+$/.test(ln) && ln.length > 3) {
+//             serial = ln;
+//             break;
+//           }
+//         }
+//       }
+//     }
+
+//     if (platform === 'linux') {
+//       try {
+//         const mountInfo = await execPromise(`findmnt -n -o SOURCE / 2>/dev/null || echo "/dev/sda"`);
+//         const rootDev = (mountInfo || '/dev/sda').trim().split(/\s+/)[0];
+//         const ls = await execPromise(`lsblk -dn -o SERIAL ${rootDev} 2>/dev/null`);
+//         if (ls && ls.trim()) serial = ls.trim();
+//         const u = await execPromise(`udevadm info --query=property --name=${rootDev} 2>/dev/null | grep -E '^ID_SERIAL=' || true`);
+//         const mu = (u || '').match(/^ID_SERIAL=(.+)$/m);
+//         if (mu && mu[1]) serial = mu[1].trim();
+//       } catch (e) {}
+//     }
+
+//     if (platform === 'darwin') {
+//       try {
+//         const sp = await execPromise(`system_profiler SPStorageDataType 2>/dev/null || system_profiler SPSerialATADataType 2>/dev/null`);
+//         let m = sp.match(/Serial Number:\s*(\S+)/i);
+//         if (m && m[1]) serial = m[1].trim();
+//         if (!serial) {
+//           const uuidOut = await execPromise(`ioreg -rd1 -c IOPlatformExpertDevice | awk -F\\" '/IOPlatformUUID/ { print $(NF-1) }' 2>/dev/null || echo ""`);
+//           if (uuidOut && uuidOut.trim()) serial = `UUID:${uuidOut.trim()}`;
+//         }
+//       } catch (e) {}
+//     }
+
+//     if (serial) {
+//       // remove _ and .
+//       serial = serial.replace(/[_\.]/g, '');
+//     }
+
+//     return serial || null;
+//   } catch (err) {
+//     return null;
+//   }
+// }
+
 async getHddSerial() {
   const platform = os.platform();
   try {
     let serial = null;
 
-    if (platform === 'win32') {
-      const out = await execPromise('wmic diskdrive get SerialNumber /value');
-      let m = out.match(/SerialNumber\s*=\s*(\S+)/i);
-      if (m && m[1]) serial = m[1].trim();
-      if (!serial) {
-        const lines = out.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-        for (const ln of lines) {
-          if (/^[0-9A-Za-z\-_.]+$/.test(ln) && ln.length > 3) {
-            serial = ln;
-            break;
+   if (platform === 'win32') {
+      const commands = [
+        // Modern Windows / NVMe
+        `powershell -NoProfile -Command "(Get-PhysicalDisk | Select -ExpandProperty SerialNumber | Select -First 1)"`,
+        // Standard HDD/SSD
+        `powershell -NoProfile -Command "(Get-CimInstance Win32_DiskDrive | Select -ExpandProperty SerialNumber | Select -First 1)"`,
+        // Legacy fallback
+        `powershell -NoProfile -Command "(Get-WmiObject Win32_PhysicalMedia | Select -ExpandProperty SerialNumber | Select -First 1)"`
+      ];
+
+      for (const cmd of commands) {
+        try {
+          const out = await execPromise(cmd);
+          const cleaned = out?.trim().replace(/[.\s_]/g, ''); // Remove spaces, dots, and underscores
+          if (cleaned && cleaned.length > 3 && cleaned !== 'NULL') {
+            console.log('HDD Serial Found (Windows) =>', cleaned);
+            return cleaned;
           }
-        }
+        } catch (_) {}
       }
+
+      console.log('❌ Windows disk serial not found. Fallback to MAC.');
     }
 
+    // Linux
     if (platform === 'linux') {
       try {
         const mountInfo = await execPromise(`findmnt -n -o SOURCE / 2>/dev/null || echo "/dev/sda"`);
         const rootDev = (mountInfo || '/dev/sda').trim().split(/\s+/)[0];
+
         const ls = await execPromise(`lsblk -dn -o SERIAL ${rootDev} 2>/dev/null`);
         if (ls && ls.trim()) serial = ls.trim();
+
         const u = await execPromise(`udevadm info --query=property --name=${rootDev} 2>/dev/null | grep -E '^ID_SERIAL=' || true`);
         const mu = (u || '').match(/^ID_SERIAL=(.+)$/m);
         if (mu && mu[1]) serial = mu[1].trim();
       } catch (e) {}
     }
 
+    // macOS
     if (platform === 'darwin') {
       try {
         const sp = await execPromise(`system_profiler SPStorageDataType 2>/dev/null || system_profiler SPSerialATADataType 2>/dev/null`);
         let m = sp.match(/Serial Number:\s*(\S+)/i);
         if (m && m[1]) serial = m[1].trim();
+
         if (!serial) {
-          const uuidOut = await execPromise(`ioreg -rd1 -c IOPlatformExpertDevice | awk -F\\" '/IOPlatformUUID/ { print $(NF-1) }' 2>/dev/null || echo ""`);
+          const uuidOut = await execPromise(
+            `ioreg -rd1 -c IOPlatformExpertDevice | awk -F\\" '/IOPlatformUUID/ { print $(NF-1) }' 2>/dev/null || echo ""`
+          );
           if (uuidOut && uuidOut.trim()) serial = `UUID:${uuidOut.trim()}`;
         }
       } catch (e) {}
     }
 
-    if (serial) {
-      // remove _ and .
-      serial = serial.replace(/[_\.]/g, '');
-    }
+    // Remove _ and .
+    if (serial) serial = serial.replace(/[_\.]/g, '');
 
+    // === MAC FALLBACK ===
+    if (!serial) {
+      const ifaces = os.networkInterfaces();
+      for (const name in ifaces) {
+        for (const iface of ifaces[name]) {
+          if (!iface.internal && iface.mac && iface.mac !== '00:00:00:00:00:00') {
+            serial = iface.mac.toUpperCase().replace(/:/g, '');
+            break;
+          }
+        }
+        if (serial) break;
+      }
+    }
+    console.log('HDD Serial:', serial || 'Not found');
     return serial || null;
+ 
   } catch (err) {
     return null;
   }
